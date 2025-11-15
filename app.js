@@ -9,7 +9,7 @@ let currentCityId = null;
 let citySearchTerm = "";
 
 // ЗАМЕНИ на свой реальный username
-const SUGGESTIONS_URL = "https://t.me/ВАШ_ЮЗЕРНЕЙМ";
+const SUGGESTIONS_URL = "https://t.me/Toni_Vaalolainen";
 
 // ---------- Главный экран ----------
 
