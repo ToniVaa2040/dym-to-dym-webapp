@@ -1,9 +1,7 @@
 // api/bot.js
-// Серверная функция для Vercel.
-// Telegram будет слать сюда обновления (webhook).
+// Webhook для Telegram на Vercel
 
 module.exports = async (req, res) => {
-  // 1. Обрабатываем только POST-запросы от Telegram
   if (req.method !== "POST") {
     return res.status(200).send("OK");
   }
@@ -15,22 +13,18 @@ module.exports = async (req, res) => {
   }
 
   const body = req.body;
-
   const message = body.message || body.edited_message;
+
   if (!message || !message.chat || !message.chat.id) {
-    // ничего интересного, просто отвечаем OK
     return res.status(200).json({ ok: true });
   }
 
   const chatId = message.chat.id;
   const text = message.text || "";
 
-  // URL мини-аппа — можно задать через переменную окружения,
-  // иначе берём домен текущего проекта Vercel.
   const webAppUrl =
     process.env.WEBAPP_URL || `https://${req.headers.host}/`;
 
-  // Обработка команды /start
   if (text.startsWith("/start")) {
     const replyText = "Жми кнопку, чтобы открыть каталог кальянных 👇";
 
@@ -38,16 +32,14 @@ module.exports = async (req, res) => {
       chat_id: chatId,
       text: replyText,
       reply_markup: {
-        keyboard: [
+        inline_keyboard: [
           [
             {
               text: "Открыть каталог кальянных",
               web_app: { url: webAppUrl }
             }
           ]
-        ],
-        resize_keyboard: true,
-        one_time_keyboard: false
+        ]
       }
     };
 
@@ -60,6 +52,5 @@ module.exports = async (req, res) => {
     return res.status(200).json({ ok: true });
   }
 
-  // На остальные сообщения можно пока не отвечать
   return res.status(200).json({ ok: true });
 };

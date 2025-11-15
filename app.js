@@ -8,11 +8,10 @@ const backToHookahsBtn = document.getElementById("backToHookahsBtn");
 let currentCityId = null;
 let citySearchTerm = "";
 
-// Сюда подставь свой реальный username в Telegram
-// Например: "https://t.me/dym_to_dym"
+// ЗАМЕНИ на свой реальный username
 const SUGGESTIONS_URL = "https://t.me/toni_vaalolainen";
 
-// ----------------- Главный экран -----------------
+// ---------- Главный экран ----------
 
 function renderWelcome() {
   currentCityId = null;
@@ -48,7 +47,7 @@ function renderWelcome() {
   appRoot.innerHTML = html;
 }
 
-// ----------------- Список городов + поиск -----------------
+// ---------- Список городов + поиск ----------
 
 function renderCities() {
   currentCityId = null;
@@ -56,35 +55,6 @@ function renderCities() {
   backToWelcomeBtn.classList.remove("hidden");
   backToCitiesBtn.classList.add("hidden");
   backToHookahsBtn.classList.add("hidden");
-
-  const term = citySearchTerm.toLowerCase();
-  const cities = appData.cities.filter((city) => {
-    if (!term) return true;
-    return (
-      city.name.toLowerCase().includes(term) ||
-      city.id.toLowerCase().includes(term)
-    );
-  });
-
-  const citiesHtml = cities
-    .map(
-      (city) => `
-      <div class="card" onclick="openCity('${city.id}')">
-        <div class="card-content-left-right">
-          <div>
-            <div class="card-title">${city.name}</div>
-            <div class="card-meta">Заведений: ${city.hookahs.length}</div>
-          </div>
-          <img
-            src="${city.image}"
-            alt="${city.name}"
-            class="card-image"
-          />
-        </div>
-      </div>
-    `
-    )
-    .join("");
 
   const html = `
     <section>
@@ -97,23 +67,61 @@ function renderCities() {
         />
       </div>
       <h2 style="font-size:16px; margin-bottom:10px;">Выбери город</h2>
-      <div class="card-list">
-        ${citiesHtml || "<div class='card-meta'>Ничего не найдено</div>"}
-      </div>
+      <div id="cityList" class="card-list"></div>
     </section>
   `;
 
   appRoot.innerHTML = html;
 
   const searchInput = document.getElementById("citySearchInput");
+  const listEl = document.getElementById("cityList");
+
+  function renderCityList() {
+    const term = (searchInput.value || "").toLowerCase();
+    const cities = appData.cities.filter((city) => {
+      if (!term) return true;
+      return (
+        city.name.toLowerCase().includes(term) ||
+        city.id.toLowerCase().includes(term)
+      );
+    });
+
+    const citiesHtml = cities
+      .map(
+        (city) => `
+        <div class="card" onclick="openCity('${city.id}')">
+          <div class="card-content-left-right">
+            <div>
+              <div class="card-title">${city.name}</div>
+              <div class="card-meta">Заведений: ${city.hookahs.length}</div>
+            </div>
+            <img
+              src="${city.image}"
+              alt="${city.name}"
+              class="card-image"
+            />
+          </div>
+        </div>
+      `
+      )
+      .join("");
+
+    listEl.innerHTML =
+      citiesHtml || "<div class='card-meta'>Ничего не найдено</div>";
+  }
+
+  // восстановление предыдущего поиска
   searchInput.value = citySearchTerm;
+
   searchInput.addEventListener("input", (e) => {
     citySearchTerm = e.target.value;
-    renderCities();
+    renderCityList();
   });
+
+  renderCityList();
 }
 
-// ----------------- Список кальянных в городе -----------------
+// ---------- Список кальянных в городе ----------
 
 function renderHookahs(cityId) {
   currentCityId = cityId;
@@ -162,7 +170,7 @@ function renderHookahs(cityId) {
   appRoot.innerHTML = html;
 }
 
-// ----------------- Детальная карточка кальянной -----------------
+// ---------- Детальная карточка кальянной ----------
 
 function renderHookahDetail(cityId, hookahId) {
   const city = appData.cities.find((c) => c.id === cityId);
@@ -217,7 +225,7 @@ function renderHookahDetail(cityId, hookahId) {
   appRoot.innerHTML = html;
 }
 
-// ----------------- Глобальные функции для onClick -----------------
+// ---------- Глобальные функции для onClick ----------
 
 window.openCities = function () {
   renderCities();
@@ -239,7 +247,7 @@ window.openSuggestions = function () {
   window.open(SUGGESTIONS_URL, "_blank");
 };
 
-// ----------------- Кнопки "Назад" -----------------
+// ---------- Кнопки "Назад" ----------
 
 backToWelcomeBtn.addEventListener("click", () => {
   renderWelcome();
@@ -261,8 +269,17 @@ backToHookahsBtn.addEventListener("click", () => {
   }
 });
 
-// ----------------- Старт приложения -----------------
+// ---------- Старт приложения ----------
 
 document.addEventListener("DOMContentLoaded", () => {
+  if (window.Telegram && window.Telegram.WebApp) {
+    try {
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
+    } catch (e) {
+      console.log("Telegram WebApp API недоступен:", e);
+    }
+  }
+
   renderWelcome();
 });
