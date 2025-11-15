@@ -7,19 +7,12 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- ВЕСЬ ПРИЛОЖЕНИЕ ВНУТРИ ЭТОГО КОНТЕЙНЕРА -->
   <div class="app-container">
-    <!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <title>Dым to Dым — каталог кальянных</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <div class="app-container">
+    <!-- СЮДА JS РИСУЕТ ЭКРАНЫ (главный, города, кальянные, детали) -->
     <main id="app"></main>
 
+    <!-- НИЖНЯЯ СТАТИЧНАЯ ПЛАШКА С КНОПКАМИ "НАЗАД" -->
     <footer class="app-footer">
       <button id="backToWelcomeBtn" class="back-btn hidden">
         На главную
@@ -33,27 +26,7 @@
     </footer>
   </div>
 
-  <script src="data.js"></script>
-  <script src="app.js"></script>
-</body>
-</html>
-
-
-    <main id="app"></main>
-
-    <footer class="app-footer">
-      <button id="backToWelcomeBtn" class="back-btn hidden">
-        На главную
-      </button>
-      <button id="backToCitiesBtn" class="back-btn hidden">
-        Назад к городам
-      </button>
-      <button id="backToHookahsBtn" class="back-btn secondary hidden">
-        Назад к заведениям
-      </button>
-    </footer>
-  </div>
-
+  <!-- ПОДКЛЮЧАЕМ ДАННЫЕ И ЛОГИКУ ПРИЛОЖЕНИЯ -->
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
