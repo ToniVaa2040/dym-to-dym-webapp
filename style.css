@@ -1,66 +1,130 @@
-/* ====== ГЛОБАЛ ====== */
-body {
+/* БАЗОВЫЕ СТИЛИ */
+
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro", sans-serif;
-  background-color: #0f0f0f;
-  color: #ffffff;
 }
 
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #050607;
+  color: #f5f5f5;
+}
+
+/* КОНТЕЙНЕР ПРИЛОЖЕНИЯ */
+
+.app-container {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  /* Отступ сверху, чтобы контент не залезал под "Закрыть" Телеграма */
+  padding: 16px 12px 12px;
+  padding-top: calc(32px + var(--tg-safe-area-inset-top, 0px));
+}
+
+/* Контент: делаем запас снизу под нижнюю плашку с кнопками */
 #app {
-  padding: 16px;
-  padding-top: 110px; /* отступ, чтобы ничего не перекрывалось кнопкой Telegram */
+  flex: 1;
+  padding-bottom: 96px; /* чтобы нижняя карточка не пряталась за кнопками */
 }
 
-/* ====== ЗАГОЛОВКИ ====== */
+/* --- ГЛОБАЛЬНЫЙ ОТСТУП ДЛЯ ВСЕХ ЭКРАНОВ --- */
+
+section {
+  margin-top: 32px; /* чтобы верхняя панель Telegram ничего не перекрывала */
+}
+
+/* Заголовки секций (например, "ВЫБОР ГОРОДА", "ВЫБОР КАЛЬЯННОЙ", название кальянной) */
 
 .section-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  margin-bottom: 20px;
+  text-transform: uppercase;
   text-align: center;
-  color: #ffffff;
-  padding: 0 16px;
+  margin-bottom: 14px;
 }
 
-/* ====== ПОИСК ====== */
+/* --- ГЛАВНЫЙ ЭКРАН --- */
+
+.welcome-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.welcome-image {
+  width: 100%;
+  border-radius: 12px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.6);
+}
+
+.welcome-text {
+  font-size: 15px;
+  color: #d0d0d0;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* --- КНОПКИ НА ГЛАВНОМ ЭКРАНЕ --- */
+
+.welcome-buttons {
+  display: flex;
+  flex-direction: column;   /* вертикально */
+  gap: 12px;
+  width: 100%;
+}
+
+.welcome-buttons .btn {
+  width: 100%;
+  text-align: center;
+}
+
+/* --- ПОИСК --- */
 
 .search-bar {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .search-input {
   width: 100%;
-  padding: 14px 16px;
-  border-radius: 14px;
-  border: none;
-  outline: none;
-  font-size: 16px;
-  background-color: #1d1d1d;
-  color: #fff;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid #34363c;
+  background: #151618;
+  color: #f5f5f5;
+  font-size: 14px;
 }
 
-/* ====== КАРТОЧКИ ====== */
+/* --- КАРТОЧКИ ГОРОДОВ И КАЛЬЯННЫХ --- */
 
 .card-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .card {
-  width: 100%;
-  background-color: #1a1a1a;
-  padding: 16px;
-  border-radius: 16px;
+  width: 100%;              /* карточки растянуты по ширине контейнера */
+  background: #151618;
+  border-radius: 12px;
+  padding: 10px;
   display: flex;
-  flex-direction: column;
+  cursor: pointer;
+}
+
+.card:hover {
+  background: #1b1c1f;
 }
 
 .card-content-left-right {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -68,131 +132,137 @@ body {
 }
 
 .card-title {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
-  margin-bottom: 6px;
 }
 
 .card-meta {
-  font-size: 14px;
-  opacity: 0.8;
+  font-size: 13px;
+  color: #c0c0c0;
+  margin-top: 4px;
 }
 
 .card-image {
-  width: 90px;
-  height: 90px;
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
   object-fit: cover;
-  border-radius: 12px;
+  flex-shrink: 0;
 }
 
-/* ====== WELCOME ЭКРАН ====== */
-
-.welcome-screen {
-  text-align: center;
-}
-
-.welcome-image {
-  width: 100%;
-  border-radius: 22px;
-  margin-bottom: 20px;
-}
-
-.welcome-text {
-  font-size: 16px;
-  opacity: 0.8;
-  margin-bottom: 24px;
-}
-
-.welcome-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* ====== КНОПКИ ====== */
-
-.btn {
-  width: 100%;
-  padding: 16px;
-  border-radius: 14px;
-  font-size: 17px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-}
-
-.btn-primary {
-  background-color: #ff8a30;
-  color: #000;
-}
-
-.btn-secondary {
-  background-color: #2e2e2e;
-  color: #fff;
-}
-
-/* ====== ДЕТАЛЬНАЯ КАРТОЧКА ====== */
+/* --- ДЕТАЛЬНАЯ КАРТОЧКА --- */
 
 .detail-image {
   width: 100%;
-  border-radius: 20px;
-  margin-bottom: 16px;
+  max-height: 230px;
+  border-radius: 12px;
+  object-fit: cover;
+  margin-bottom: 12px;
 }
 
 .detail-title {
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 700;
   margin-bottom: 6px;
 }
 
 .detail-rating {
-  font-size: 16px;
+  font-size: 15px;
   margin-bottom: 10px;
-}
-
-.rating {
-  color: #3fe57a;
 }
 
 .detail-address,
-.detail-hours-title,
-.detail-notes {
-  font-size: 16px;
-  margin-bottom: 10px;
+.detail-notes,
+.detail-hours-title {
+  font-size: 14px;
+  margin-bottom: 6px;
 }
 
 .detail-hours-list {
-  margin: 0;
-  padding-left: 20px;
-  margin-bottom: 20px;
+  list-style: none;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.detail-hours-list li {
+  margin-bottom: 4px;
 }
 
 .actions {
-  margin-top: 20px;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-/* ====== СТАТИЧНЫЕ БАРЫ (чтобы ничего не ехало при скролле) ====== */
+/* --- ОБЩИЕ КНОПКИ --- */
 
-button#backToWelcomeBtn,
-button#backToCitiesBtn,
-button#backToHookahsBtn {
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 14px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #ff8a3d;
+  color: #050607;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.07);
+}
+
+.btn-secondary {
+  background: #27292e;
+  color: #f5f5f5;
+}
+
+/* --- НИЖНЯЯ СТАТИЧНАЯ ПЛАШКА С КНОПКАМИ "НАЗАД" --- */
+
+.app-footer {
   position: fixed;
-  top: 10px;
-  left: 10px;
-  z-index: 1000;
-}
-
-button#backToCitiesBtn {
-  left: auto;
-  right: 10px;
-}
-
-button#backToHookahsBtn {
   left: 50%;
   transform: translateX(-50%);
+  bottom: 0;
+  width: 100%;
+  max-width: 480px;
+
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(5, 6, 7, 0) 0%, #050607 40%);
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  z-index: 1000; /* всегда поверх контента */
 }
 
-/* скрытие */
+.back-btn {
+  flex: 1;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-weight: 600;
+cursor: pointer;
+
+  /* ВСЕ кнопки "назад" — оранжевые, как на главной */
+  background: #ff8a3d;
+  color: #050607;
+}
+
+/* если захочешь сделать вторую более тёмной — можно переопределить:
+.back-btn.secondary {
+  background: #ffa85f;
+}
+*/
+
+.rating {
+  font-weight: 600;
+  color: #7cff8d;
+}
+
 .hidden {
-  display: none !important;
+  display: none;
 }
