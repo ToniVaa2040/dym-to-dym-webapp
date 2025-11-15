@@ -1,117 +1,66 @@
-/* БАЗОВЫЕ СТИЛИ */
-
-* {
-  box-sizing: border-box;
+/* ====== ГЛОБАЛ ====== */
+body {
   margin: 0;
   padding: 0;
-}
-
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #050607;
-  color: #f5f5f5;
-}
-
-/* КОНТЕЙНЕР ПРИЛОЖЕНИЯ */
-
-.app-container {
-  max-width: 480px;
-  margin: 0 auto;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-
-  /* Отступ сверху, чтобы контент не залезал под "Закрыть" */
-  padding: 16px 12px 12px;
-  padding-top: calc(32px + var(--tg-safe-area-inset-top, 0px));
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro", sans-serif;
+  background-color: #0f0f0f;
+  color: #ffffff;
 }
 
 #app {
-  flex: 1;
+  padding: 16px;
+  padding-top: 110px; /* отступ, чтобы ничего не перекрывалось кнопкой Telegram */
 }
 
-/* --- ГЛОБАЛЬНЫЙ ОТСТУП ДЛЯ ВСЕХ ЭКРАНОВ --- */
+/* ====== ЗАГОЛОВКИ ====== */
 
-section {
-  margin-top: 32px; /* чтобы верхняя панель Telegram ничего не перекрывала */
-}
-
-/* --- ГЛАВНЫЙ ЭКРАН --- */
-
-.welcome-screen {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  align-items: center;
-}
-
-.welcome-image {
-  width: 100%;
-  border-radius: 12px;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.6);
-}
-
-.welcome-text {
-  font-size: 15px;
-  color: #d0d0d0;
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
   text-align: center;
-  line-height: 1.4;
+  color: #ffffff;
+  padding: 0 16px;
 }
 
-/* --- КНОПКИ НА ГЛАВНОМ ЭКРАНЕ --- */
-
-.welcome-buttons {
-  display: flex;
-  flex-direction: column;   /* ВЕРТИКАЛЬНО */
-  gap: 12px;                /* Отступ между кнопками */
-  width: 100%;
-}
-
-.welcome-buttons .btn {
-  width: 100%;              /* На всю ширину контейнера */
-  text-align: center;
-}
-
-/* --- ПОИСК --- */
+/* ====== ПОИСК ====== */
 
 .search-bar {
-  margin-bottom: 12px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
 }
 
 .search-input {
   width: 100%;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid #34363c;
-  background: #151618;
-  color: #f5f5f5;
-  font-size: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  background-color: #1d1d1d;
+  color: #fff;
 }
 
-/* --- КАРТОЧКИ ГОРОДОВ И КАЛЬЯННЫХ --- */
+/* ====== КАРТОЧКИ ====== */
 
 .card-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .card {
-  background: #151618;
-  border-radius: 12px;
-  padding: 10px;
+  width: 100%;
+  background-color: #1a1a1a;
+  padding: 16px;
+  border-radius: 16px;
   display: flex;
-  cursor: pointer;
-}
-
-.card:hover {
-  background: #1b1c1f;
+  flex-direction: column;
 }
 
 .card-content-left-right {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -119,123 +68,131 @@ section {
 }
 
 .card-title {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 600;
+  margin-bottom: 6px;
 }
 
 .card-meta {
-  font-size: 13px;
-  color: #c0c0c0;
-  margin-top: 4px;
+  font-size: 14px;
+  opacity: 0.8;
 }
 
 .card-image {
-  width: 80px;
-  height: 80px;
-  border-radius: 10px;
+  width: 90px;
+  height: 90px;
   object-fit: cover;
-  flex-shrink: 0;
+  border-radius: 12px;
 }
 
-/* --- ДЕТАЛЬНАЯ КАРТОЧКА --- */
+/* ====== WELCOME ЭКРАН ====== */
+
+.welcome-screen {
+  text-align: center;
+}
+
+.welcome-image {
+  width: 100%;
+  border-radius: 22px;
+  margin-bottom: 20px;
+}
+
+.welcome-text {
+  font-size: 16px;
+  opacity: 0.8;
+  margin-bottom: 24px;
+}
+
+.welcome-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ====== КНОПКИ ====== */
+
+.btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: #ff8a30;
+  color: #000;
+}
+
+.btn-secondary {
+  background-color: #2e2e2e;
+  color: #fff;
+}
+
+/* ====== ДЕТАЛЬНАЯ КАРТОЧКА ====== */
 
 .detail-image {
   width: 100%;
-  max-height: 230px;
-  border-radius: 12px;
-  object-fit: cover;
-  margin-bottom: 12px;
+  border-radius: 20px;
+  margin-bottom: 16px;
 }
 
 .detail-title {
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 700;
   margin-bottom: 6px;
 }
 
 .detail-rating {
-  font-size: 15px;
-  margin-bottom: 10px;
-}
-
-.detail-address,
-.detail-notes,
-.detail-hours-title {
-  font-size: 14px;
-  margin-bottom: 6px;
-}
-
-.detail-hours-list {
-  list-style: none;
-  font-size: 14px;
-  margin-bottom: 12px;
-}
-
-.detail-hours-list li {
-  margin-bottom: 4px;
-}
-
-.actions {
-  margin-top: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* --- КНОПКИ --- */
-
-.btn {
-  border: none;
-  border-radius: 999px;
-  padding: 14px 16px;
   font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-primary {
-  background: #ff8a3d;
-  color: #050607;
-}
-
-.btn-primary:hover {
-  filter: brightness(1.07);
-}
-
-.btn-secondary {
-  background: #27292e;
-  color: #f5f5f5;
-}
-
-.app-footer {
-  margin-top: 14px;
   margin-bottom: 10px;
-  display: flex;
-  gap: 10px;
-  justify-content: space-between;
-}
-
-.back-btn {
-  flex: 1;
-  border: none;
-  border-radius: 999px;
-  padding: 14px 18px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  background: #27292e;
-  color: #f5f5f5;
-}
-
-.back-btn.secondary {
-  background: #191a1e;
 }
 
 .rating {
-  font-weight: 600;
-  color: #7cff8d;
+  color: #3fe57a;
 }
 
+.detail-address,
+.detail-hours-title,
+.detail-notes {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.detail-hours-list {
+  margin: 0;
+  padding-left: 20px;
+  margin-bottom: 20px;
+}
+
+.actions {
+  margin-top: 20px;
+}
+
+/* ====== СТАТИЧНЫЕ БАРЫ (чтобы ничего не ехало при скролле) ====== */
+
+button#backToWelcomeBtn,
+button#backToCitiesBtn,
+button#backToHookahsBtn {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+}
+
+button#backToCitiesBtn {
+  left: auto;
+  right: 10px;
+}
+
+button#backToHookahsBtn {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* скрытие */
 .hidden {
-  display: none;
+  display: none !important;
 }

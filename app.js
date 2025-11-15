@@ -9,7 +9,7 @@ let currentCityId = null;
 let citySearchTerm = "";
 
 // ЗАМЕНИ на свой реальный username
-const SUGGESTIONS_URL = "https://t.me/toni_vaalolainen";
+const SUGGESTIONS_URL = "https://t.me/ВАШ_ЮЗЕРНЕЙМ";
 
 // ---------- Главный экран ----------
 
@@ -58,6 +58,8 @@ function renderCities() {
 
   const html = `
     <section>
+      <h2 class="section-title">ВЫБОР ГОРОДА</h2>
+
       <div class="search-bar">
         <input
           id="citySearchInput"
@@ -66,7 +68,7 @@ function renderCities() {
           placeholder="Поиск города"
         />
       </div>
-      <h2 style="font-size:16px; margin-bottom:10px;">Выбери город</h2>
+
       <div id="cityList" class="card-list"></div>
     </section>
   `;
@@ -158,9 +160,7 @@ function renderHookahs(cityId) {
 
   const html = `
     <section>
-      <h2 style="font-size:16px; margin-bottom:10px;">
-        ${city.name}: кальянные
-      </h2>
+      <h2 class="section-title">ВЫБОР КАЛЬЯННОЙ</h2>
       <div class="card-list">
         ${hookahsHtml || "<div class='card-meta'>Пока нет заведений</div>"}
       </div>
@@ -189,12 +189,15 @@ function renderHookahDetail(cityId, hookahId) {
 
   const html = `
     <section>
+      <!-- Заголовок наверху между кнопками Telegram -->
+      <h2 class="section-title">${hookah.name}</h2>
+
       <img
         src="${hookah.image}"
         alt="${hookah.name}"
         class="detail-image"
       />
-      <h2 class="detail-title">${hookah.name}</h2>
+      <h3 class="detail-title">${hookah.name}</h3>
       <div class="detail-rating">
         Рейтинг: <span class="rating">${hookah.rating.toFixed(1)}</span>
       </div>
