@@ -1,268 +1,490 @@
-/* БАЗОВЫЕ СТИЛИ */
+/* style.css */
+/* Общий стиль приложения мини-аппа Dым to Dым */
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
+html,
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #050607;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #050608;
   color: #f5f5f5;
 }
 
-/* КОНТЕЙНЕР ПРИЛОЖЕНИЯ */
-
-.app-container {
-  max-width: 480px;
-  margin: 0 auto;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-
-  /* Отступ сверху, чтобы контент не залезал под "Закрыть" Телеграма */
-  padding: 16px 12px 12px;
-  padding-top: calc(32px + var(--tg-safe-area-inset-top, 0px));
-}
-
-/* Контент: делаем запас снизу под нижнюю плашку с кнопками */
+/* Основной контейнер приложения */
 #app {
-  flex: 1;
-  padding-bottom: 96px; /* чтобы нижняя карточка не пряталась за кнопками */
+  min-height: 100vh;
+  padding-bottom: 90px; /* место под нижнюю панель */
 }
 
-/* --- ГЛОБАЛЬНЫЙ ОТСТУП ДЛЯ ВСЕХ ЭКРАНОВ --- */
-
-section {
-  margin-top: 32px; /* чтобы верхняя панель Telegram ничего не перекрывала */
+/* Экраны */
+.screen {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px 16px 32px;
 }
 
-/* Заголовки секций (например, "ВЫБОР ГОРОДА", "ВЫБОР КАЛЬЯННОЙ", название кальянной) */
+.fade-in {
+  animation: fadeIn 0.25s ease-out;
+}
 
-.section-title {
-  font-size: 18px;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Заголовки экранов */
+.screen-title {
+  margin: 0 0 12px;
+  font-size: 20px;
   font-weight: 700;
   text-transform: uppercase;
-  text-align: center;
-  margin-bottom: 14px;
+  letter-spacing: 0.08em;
 }
 
-/* --- ГЛАВНЫЙ ЭКРАН --- */
+.screen-subtitle {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: #aaaaaa;
+}
 
+.empty-message {
+  margin-top: 24px;
+  font-size: 14px;
+  color: #aaaaaa;
+}
+
+/* Приветственный экран */
 .welcome-screen {
   display: flex;
   flex-direction: column;
-  gap: 16px;
   align-items: center;
+  text-align: center;
+}
+
+.welcome-image-wrapper {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto 16px;
 }
 
 .welcome-image {
   width: 100%;
-  border-radius: 12px;
-  aspect-ratio: 16 / 9;
+  display: block;
+  border-radius: 16px;
   object-fit: cover;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.6);
 }
 
-.welcome-text {
-  font-size: 15px;
-  color: #d0d0d0;
-  text-align: center;
-  line-height: 1.4;
-}
-
-/* --- КНОПКИ НА ГЛАВНОМ ЭКРАНЕ --- */
-
-.welcome-buttons {
+.welcome-content {
   display: flex;
-  flex-direction: column;   /* вертикально */
-  gap: 12px;
-  width: 100%;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
 }
 
-.welcome-buttons .btn {
-  width: 100%;
-  text-align: center;
+.welcome-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
 }
 
-/* --- ПОИСК --- */
-
-.search-bar {
-  margin-bottom: 12px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid #34363c;
-  background: #151618;
-  color: #f5f5f5;
+.welcome-subtitle {
+  margin: 0 0 12px;
   font-size: 14px;
+  color: #cccccc;
 }
 
-/* --- КАРТОЧКИ ГОРОДОВ И КАЛЬЯННЫХ --- */
-
-.card-list {
+/* Карточки городов и заведений */
+.cards-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding-bottom: 16px;
 }
 
 .card {
-  width: 100%;              /* карточки растянуты по ширине контейнера */
-  background: #151618;
-  border-radius: 12px;
-  padding: 10px;
+  background: #111218;
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  border: 1px solid #23242f;
+}
+
+.card:active {
+  transform: scale(0.98);
+  opacity: 0.95;
+}
+
+/* Карточка города */
+.city-card {
   display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.city-card-image-wrapper {
+  flex: 0 0 90px;
+  height: 70px;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.city-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.city-card-content {
+  flex: 1;
+}
+
+.city-card-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Карточка кальянной в списке */
+.hookah-card {
   cursor: pointer;
 }
 
-.card:hover {
-  background: #1b1c1f;
-}
-
-.card-content-left-right {
-  flex: 1;
+.hookah-card-main {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
 }
 
-.card-title {
-  font-size: 15px;
-  font-weight: 600;
+.hookah-card-info {
+  flex: 1;
 }
 
-.card-meta {
-  font-size: 13px;
-  color: #c0c0c0;
-  margin-top: 4px;
-}
-
-.card-image {
-  width: 80px;
-  height: 80px;
-  border-radius: 10px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-/* --- ДЕТАЛЬНАЯ КАРТОЧКА --- */
-
-.detail-image {
-  width: 100%;
-  max-height: 230px;
-  border-radius: 12px;
-  object-fit: cover;
-  margin-bottom: 12px;
-}
-
-.detail-title {
-  font-size: 19px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.detail-rating {
-  font-size: 15px;
-  margin-bottom: 10px;
-}
-
-.detail-address,
-.detail-notes,
-.detail-hours-title {
-  font-size: 14px;
-  margin-bottom: 6px;
-}
-
-.detail-hours-list {
-  list-style: none;
-  font-size: 14px;
-  margin-bottom: 12px;
-}
-
-.detail-hours-list li {
-  margin-bottom: 4px;
-}
-
-.actions {
-  margin-top: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* --- ОБЩИЕ КНОПКИ --- */
-
-.btn {
-  border: none;
-  border-radius: 999px;
-  padding: 14px 16px;
+.hookah-card-title {
+  margin: 0 0 4px;
   font-size: 16px;
   font-weight: 600;
-  cursor: pointer;
 }
 
-.btn-primary {
-  background: #ff8a3d;
-  color: #050607;
-}
-
-.btn-primary:hover {
-  filter: brightness(1.07);
-}
-
-.btn-secondary {
-  background: #27292e;
+.hookah-card-rating {
+  margin: 0 0 4px;
+  font-size: 13px;
   color: #f5f5f5;
 }
 
-/* --- НИЖНЯЯ СТАТИЧНАЯ ПЛАШКА С КНОПКАМИ "НАЗАД" --- */
+.hookah-card-rating span {
+  font-weight: 600;
+  color: #ffd166;
+}
 
+.hookah-card-address {
+  margin: 0;
+  font-size: 12px;
+  color: #bbbbbb;
+}
+
+.hookah-card-image-wrapper {
+  flex: 0 0 90px;
+  height: 70px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.hookah-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Экран карточки заведения */
+.hookah-details-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hookah-header {
+  text-align: left;
+}
+
+.hookah-name {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.hookah-city {
+  margin: 0;
+  font-size: 13px;
+  color: #aaaaaa;
+}
+
+/* Галерея с горизонтальным свайпом */
+.gallery-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
+  padding-bottom: 4px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gallery-slide {
+  flex: 0 0 80%;
+  max-width: 80%;
+  scroll-snap-align: center;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.gallery-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hookah-main-info {
+  background: #111218;
+  border-radius: 16px;
+  padding: 12px;
+  border: 1px solid #23242f;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hookah-rating {
+  margin: 0;
+  font-size: 14px;
+}
+
+.hookah-rating span {
+  font-weight: 600;
+  color: #ffd166;
+}
+
+.hookah-address {
+  margin: 0;
+  font-size: 13px;
+  color: #cccccc;
+}
+
+/* Телефоны */
+.hookah-phones {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+}
+
+.hookah-phones li {
+  margin: 2px 0;
+}
+
+.hookah-phones a {
+  color: #8fd3ff;
+  text-decoration: none;
+}
+
+.hookah-phones a:hover {
+  text-decoration: underline;
+}
+
+.hookah-phones-empty {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #aaaaaa;
+}
+
+/* Теги (еда/алкоголь/напитки) */
+.hookah-tags {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hookah-tag {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Блок часов работы */
+.hookah-working-block {
+  background: #111218;
+  border-radius: 16px;
+  padding: 12px;
+  border: 1px solid #23242f;
+}
+
+.hookah-working-block h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.working-hours-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+}
+
+.working-hours-table td {
+  padding: 3px 0;
+  font-size: 12px;
+}
+
+.wh-day {
+  width: 45%;
+  color: #aaaaaa;
+}
+
+.wh-hours {
+  width: 55%;
+  text-align: right;
+}
+
+/* Статус "сегодня" */
+.hookah-today-status {
+  margin-top: 6px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.status-open {
+  background: rgba(46, 204, 113, 0.15);
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.5);
+}
+
+.status-closed {
+  background: rgba(231, 76, 60, 0.15);
+  color: #ff6b6b;
+  border: 1px solid rgba(231, 76, 60, 0.5);
+}
+
+.status-unknown {
+  background: rgba(255, 255, 255, 0.06);
+  color: #dddddd;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Комментарии и видео */
+.hookah-notes,
+.hookah-video {
+  background: #111218;
+  border-radius: 16px;
+  padding: 12px;
+  border: 1px solid #23242f;
+}
+
+.hookah-notes h3,
+.hookah-video h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+/* Кнопки */
+.primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #ff7a1a, #ffb347);
+  color: #111218;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.primary-btn:active {
+  transform: scale(0.97);
+}
+
+.yandex-btn {
+  width: 100%;
+}
+
+/* Блок с действиями */
+.hookah-actions {
+  margin-top: 4px;
+}
+
+/* Нижняя панель */
 .app-footer {
   position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   bottom: 0;
-  width: 100%;
-  max-width: 480px;
-
-  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(180deg, rgba(5, 6, 7, 0) 0%, #050607 40%);
+  padding: 8px 10px;
   display: flex;
   gap: 8px;
   justify-content: space-between;
-  z-index: 1000; /* всегда поверх контента */
+  align-items: center;
+  background: linear-gradient(180deg, rgba(5, 6, 8, 0.5), #050608 60%);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 100;
 }
 
-.back-btn {
+.footer-btn {
   flex: 1;
-  border: none;
+  padding: 8px 10px;
   border-radius: 999px;
-  padding: 12px 14px;
-  font-size: 15px;
-  font-weight: 600;
-cursor: pointer;
-
-  /* ВСЕ кнопки "назад" — оранжевые, как на главной */
-  background: #ff8a3d;
-  color: #050607;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(18, 19, 25, 0.9);
+  color: #f5f5f5;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
-/* если захочешь сделать вторую более тёмной — можно переопределить:
-.back-btn.secondary {
-  background: #ffa85f;
-}
-*/
-
-.rating {
-  font-weight: 600;
-  color: #7cff8d;
+.footer-btn:active {
+  transform: scale(0.97);
 }
 
+.footer-link {
+  background: linear-gradient(135deg, #ff7a1a, #ffb347);
+  color: #111218;
+  border-color: transparent;
+}
+
+/* Скрытый элемент */
 .hidden {
-  display: none;
+  display: none !important;
+}
+
+/* Адаптивность */
+@media (min-width: 700px) {
+  .screen {
+    padding: 24px 24px 40px;
+  }
+
+  .gallery-slide {
+    flex-basis: 60%;
+    max-width: 60%;
+  }
 }
