@@ -184,10 +184,8 @@ function applyScreenTransition(direction) {
   const screenEl = appContainer.querySelector(".screen");
   if (!screenEl) return;
 
-  // Сбрасываем классы, чтобы анимация перезапускалась
   screenEl.classList.remove("screen--animate-in-forward", "screen--animate-in-back");
-  // Форсим перерасчёт стиля
-  void screenEl.offsetWidth;
+  void screenEl.offsetWidth; // перезапуск анимации
 
   if (direction === "back") {
     screenEl.classList.add("screen--animate-in-back");
@@ -669,6 +667,7 @@ function renderHookahDetailsScreen(cityId, hookahId) {
     )
     .join("");
 
+  // --- телефоны как ссылки + обработчик через Telegram.WebApp.openLink ---
   let phonesHtml = "";
   if (phones.length > 0) {
     phonesHtml = `
@@ -676,7 +675,15 @@ function renderHookahDetailsScreen(cityId, hookahId) {
         ${phones
           .map((p) => {
             const clean = String(p).replace(/\s+/g, "");
-            return `<li><button class="phone-btn" data-phone="${clean}">${p}</button></li>`;
+            return `
+              <li>
+                <a
+                  href="tel:${clean}"
+                  class="phone-link"
+                  data-phone="${clean}"
+                >${p}</a>
+              </li>
+            `;
           })
           .join("")}
       </ul>
@@ -806,17 +813,21 @@ function renderHookahDetailsScreen(cityId, hookahId) {
     </section>
   `;
 
-  // Навешиваем клик по номерам, чтобы запускать звонилку
-  const phoneButtons = appContainer.querySelectorAll(".phone-btn");
-  phoneButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const phone = btn.dataset.phone;
+  // обработчик на телефоны: через Telegram.WebApp.openLink
+  const phoneLinks = appContainer.querySelectorAll(".phone-link");
+  phoneLinks.forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const phone = link.dataset.phone;
       if (!phone) return;
+
       const telUrl = `tel:${phone}`;
-      try {
-        window.location.href = telUrl;
-      } catch (e) {
-        console.error("Не удалось открыть звонилку", e);
+      const tg = window.Telegram && window.Telegram.WebApp;
+
+      if (tg && typeof tg.openLink === "function") {
+        tg.openLink(telUrl);
+      } else {
+        window.open(telUrl, "_self");
       }
     });
   });
