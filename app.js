@@ -251,7 +251,7 @@ function renderCitiesScreen() {
           <div class="city-card-image-wrapper">
             ${
               imgSrc
-                ? `<img src="${imgSrc}" alt="${city.name}" class="city-card-image" />`
+                ? `<img src="${imgSrc}" alt="${city.name}" class="city-card-image" loading="lazy" />`
                 : ""
             }
           </div>
@@ -332,7 +332,7 @@ function renderHookahsScreen(cityId) {
             ${
               imgSrc
                 ? `<div class="hookah-card-image-wrapper">
-                    <img src="${imgSrc}" alt="${h.name}" class="hookah-card-image" />
+                    <img src="${imgSrc}" alt="${h.name}" class="hookah-card-image" loading="lazy" />
                   </div>`
                 : ""
             }
@@ -390,7 +390,7 @@ function renderHookahDetailsScreen(cityId, hookahId) {
     .map(
       (img) => `
         <div class="gallery-slide">
-          <img src="assets/${img}" alt="${hookah.name}" class="gallery-image" />
+          <img src="assets/${img}" alt="${hookah.name}" class="gallery-image" loading="lazy" />
         </div>
       `
     )
