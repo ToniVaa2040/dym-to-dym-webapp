@@ -673,7 +673,7 @@ function renderHookahDetailsScreen(cityId, hookahId) {
       ? `
       <ul class="hookah-phones">
         ${phones
-          .map((p) => `<li><a href="tel:${p}">${p}</a></li>`)
+          .map((p) => `<li>${p}</li>`)
           .join("")}
       </ul>
     `
