@@ -232,7 +232,7 @@ function initTelegramWebApp() {
   }
 }
 
-// ---------- Свайп-назад (слева направо) ----------
+// ---------- Свайп-назад ----------
 function setupSwipeNavigation() {
   if (!appContainer) return;
 
@@ -667,30 +667,17 @@ function renderHookahDetailsScreen(cityId, hookahId) {
     )
     .join("");
 
-  // --- телефоны как ссылки + обработчик через Telegram.WebApp.openLink ---
-  let phonesHtml = "";
-  if (phones.length > 0) {
-    phonesHtml = `
+  // ВОЗВРАЩАЕМ СТАРОЕ РАБОЧЕЕ ПОВЕДЕНИЕ — ПРОСТЫЕ ССЫЛКИ <a href="tel:...">
+  const phonesHtml =
+    phones.length > 0
+      ? `
       <ul class="hookah-phones">
         ${phones
-          .map((p) => {
-            const clean = String(p).replace(/\s+/g, "");
-            return `
-              <li>
-                <a
-                  href="tel:${clean}"
-                  class="phone-link"
-                  data-phone="${clean}"
-                >${p}</a>
-              </li>
-            `;
-          })
+          .map((p) => `<li><a href="tel:${p}">${p}</a></li>`)
           .join("")}
       </ul>
-    `;
-  } else {
-    phonesHtml = `<p class="hookah-phones-empty">Телефоны: нужно уточнить</p>`;
-  }
+    `
+      : `<p class="hookah-phones-empty">Телефоны: нужно уточнить</p>`;
 
   let workingHoursHtml = "";
   if (workingHours) {
@@ -812,25 +799,6 @@ function renderHookahDetailsScreen(cityId, hookahId) {
       </div>
     </section>
   `;
-
-  // обработчик на телефоны: через Telegram.WebApp.openLink
-  const phoneLinks = appContainer.querySelectorAll(".phone-link");
-  phoneLinks.forEach((link) => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault();
-      const phone = link.dataset.phone;
-      if (!phone) return;
-
-      const telUrl = `tel:${phone}`;
-      const tg = window.Telegram && window.Telegram.WebApp;
-
-      if (tg && typeof tg.openLink === "function") {
-        tg.openLink(telUrl);
-      } else {
-        window.open(telUrl, "_self");
-      }
-    });
-  });
 }
 
 // ---------- Кнопки внизу ----------
