@@ -23,19 +23,46 @@ body {
   padding-bottom: calc(90px + env(safe-area-inset-bottom));
 }
 
+/* ЭКРАНЫ */
+
 .screen {
   max-width: 900px;
   margin: 0 auto;
   padding: 16px 16px 32px;
+  opacity: 0;
+  transform: translateX(0);
 }
 
-.fade-in {
-  animation: fadeIn 0.25s ease-out;
+/* Плавная анимация появления вперёд (новый экран) */
+.screen--animate-in-forward {
+  animation: slideInForward 0.22s ease-out forwards;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Плавная анимация появления назад (вернулись назад) */
+.screen--animate-in-back {
+  animation: slideInBack 0.22s ease-out forwards;
+}
+
+@keyframes slideInForward {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInBack {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .screen-title {
@@ -60,7 +87,8 @@ body {
   color: #aaaaaa;
 }
 
-/* Welcome */
+/* WELCOME */
+
 .welcome-screen {
   display: flex;
   flex-direction: column;
@@ -81,9 +109,16 @@ body {
   object-fit: cover;
 }
 
+.welcome-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
 .welcome-title {
+  margin: 0;
   font-size: 22px;
-  margin: 0 0 8px;
   font-weight: 700;
 }
 
@@ -93,14 +128,15 @@ body {
   color: #cccccc;
 }
 
+/* БЛОК НЕШОП */
+
 .neshop-block {
   margin-top: 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 100%;
-  max-width: 320px;
   align-items: center;
+  width: 100%;
 }
 
 .neshop-text {
@@ -109,7 +145,13 @@ body {
   color: #cccccc;
 }
 
-/* Search */
+.neshop-btn {
+  width: 100%;
+  max-width: 320px;
+}
+
+/* ПОИСК */
+
 .search-bar {
   margin-bottom: 12px;
 }
@@ -125,29 +167,32 @@ body {
   width: 100%;
   padding: 10px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   background: #111218;
   color: #f5f5f5;
   font-size: 14px;
+  outline: none;
 }
 
 .search-input::placeholder {
-  color: #777;
+  color: #666666;
 }
 
-/* List Cards */
+/* СПИСКИ КАРТОЧЕК */
+
 .cards-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding-bottom: 16px;
 }
 
 .card {
   background: #111218;
   border-radius: 16px;
   padding: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
   border: 1px solid #23242f;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
 }
 
 .card:active {
@@ -155,7 +200,8 @@ body {
   opacity: 0.95;
 }
 
-/* Cities */
+/* КАРТОЧКИ ГОРОДОВ */
+
 .city-card {
   display: flex;
   gap: 12px;
@@ -175,13 +221,22 @@ body {
   object-fit: cover;
 }
 
+.city-card-content {
+  flex: 1;
+}
+
 .city-card-title {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
 }
 
-/* Hookah list */
+/* КАРТОЧКИ ЗАВЕДЕНИЙ В СПИСКЕ */
+
+.hookah-card {
+  cursor: pointer;
+}
+
 .hookah-card-main {
   display: flex;
   align-items: center;
@@ -199,16 +254,22 @@ body {
 }
 
 .hookah-card-rating {
-  font-size: 13px;
   margin: 0 0 4px;
+  font-size: 13px;
+  color: #f5f5f5;
 }
 
 .hookah-card-rating span {
-  color: #ffd166;
   font-weight: 600;
+  color: #ffd166;
 }
 
-.hookah-card-city,
+.hookah-card-city {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: #bbbbbb;
+}
+
 .hookah-card-address {
   margin: 0;
   font-size: 12px;
@@ -228,11 +289,16 @@ body {
   object-fit: cover;
 }
 
-/* Hookah Details */
+/* ДЕТАЛИ ЗАВЕДЕНИЯ */
+
 .hookah-details-screen {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.hookah-header {
+  text-align: left;
 }
 
 .hookah-name {
@@ -247,15 +313,20 @@ body {
   color: #aaaaaa;
 }
 
+/* ГАЛЕРЕЯ */
+
 .gallery-container {
   display: flex;
   overflow-x: auto;
   gap: 8px;
+  padding-bottom: 4px;
   scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
 }
 
 .gallery-slide {
   flex: 0 0 80%;
+  max-width: 80%;
   scroll-snap-align: center;
   border-radius: 16px;
   overflow: hidden;
@@ -265,47 +336,90 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
+
+/* ОСНОВНАЯ ИНФА */
 
 .hookah-main-info {
   background: #111218;
   border-radius: 16px;
   padding: 12px;
   border: 1px solid #23242f;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   position: relative;
   z-index: 1;
 }
 
+.hookah-rating {
+  margin: 0;
+  font-size: 14px;
+}
+
+.hookah-rating span {
+  font-weight: 600;
+  color: #ffd166;
+}
+
+.hookah-address {
+  margin: 0;
+  font-size: 13px;
+  color: #cccccc;
+}
+
+/* ТЕЛЕФОНЫ */
+
 .hookah-phones {
-  margin: 6px 0 0;
-  padding: 0;
   list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
 }
 
-.hookah-phones li { margin: 2px 0; }
+.hookah-phones li {
+  margin: 2px 0;
+}
 
-.hookah-phones a {
+.phone-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
   color: #8fd3ff;
-  text-decoration: none;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
-/* Tags */
+.phone-btn:active {
+  opacity: 0.7;
+}
+
+.hookah-phones-empty {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #aaaaaa;
+}
+
+/* ТЕГИ (ЕДА/АЛКО/НАПИТКИ) */
+
 .hookah-tags {
+  margin-top: 8px;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 8px;
 }
 
 .hookah-tag {
+  font-size: 11px;
   padding: 4px 8px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  font-size: 11px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Hours */
+/* ЧАСЫ РАБОТЫ */
+
 .hookah-working-block {
   background: #111218;
   border-radius: 16px;
@@ -313,41 +427,62 @@ body {
   border: 1px solid #23242f;
 }
 
+.hookah-working-block h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.working-hours-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+}
+
 .working-hours-table td {
   padding: 3px 0;
   font-size: 12px;
 }
 
-.wh-day { color: #aaaaaa; }
-.wh-hours { text-align: right; }
+.wh-day {
+  width: 45%;
+  color: #aaaaaa;
+}
+
+.wh-hours {
+  width: 55%;
+  text-align: right;
+}
+
+/* СТАТУС СЕГОДНЯ */
 
 .hookah-today-status {
   margin-top: 6px;
   padding: 8px 10px;
   border-radius: 999px;
-  text-align: center;
   font-size: 12px;
+  text-align: center;
 }
 
 .status-open {
+  background: rgba(46, 204, 113, 0.15);
   color: #2ecc71;
-  background: rgba(46,204,113,0.15);
-  border: 1px solid rgba(46,204,113,0.5);
+  border: 1px solid rgba(46, 204, 113, 0.5);
 }
 
 .status-closed {
+  background: rgba(231, 76, 60, 0.15);
   color: #ff6b6b;
-  background: rgba(231,76,60,0.15);
-  border: 1px solid rgba(231,76,60,0.5);
+  border: 1px solid rgba(231, 76, 60, 0.5);
 }
 
 .status-unknown {
+  background: rgba(255, 255, 255, 0.06);
   color: #dddddd;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Notes/Video */
+/* КОММЕНТАРИИ / ВИДЕО */
+
 .hookah-notes,
 .hookah-video {
   background: #111218;
@@ -356,18 +491,25 @@ body {
   border: 1px solid #23242f;
 }
 
-/* Buttons */
+.hookah-notes h3,
+.hookah-video h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+/* КНОПКИ */
+
 .primary-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 10px 16px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #ff7a1a, #ffb347);
   border: none;
+  background: linear-gradient(135deg, #ff7a1a, #ffb347);
+  color: #111218;
   font-size: 14px;
   font-weight: 600;
-  color: #111218;
   cursor: pointer;
   text-decoration: none;
 }
@@ -376,7 +518,12 @@ body {
   transform: scale(0.97);
 }
 
-/* Footer */
+.yandex-btn {
+  width: 100%;
+}
+
+/* НИЖНЯЯ ПАНЕЛЬ */
+
 .app-footer {
   position: fixed;
   left: 0;
@@ -384,9 +531,13 @@ body {
   bottom: 0;
   padding: 8px 10px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  background: rgba(5,6,8,0.9);
   display: flex;
   gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(180deg, rgba(5, 6, 8, 0.5), #050608 60%);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   z-index: 100;
 }
 
@@ -394,18 +545,42 @@ body {
   flex: 1;
   padding: 8px 10px;
   border-radius: 999px;
-  background: rgba(18,19,25,0.9);
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(18, 19, 25, 0.9);
   color: #f5f5f5;
   font-size: 12px;
+  font-weight: 500;
   text-align: center;
+  cursor: pointer;
   text-decoration: none;
+  white-space: nowrap;
+}
+
+.footer-btn:active {
+  transform: scale(0.97);
 }
 
 .footer-link {
   background: linear-gradient(135deg, #ff7a1a, #ffb347);
   color: #111218;
-  border: none;
+  border-color: transparent;
 }
 
-.hidden { display: none !important; }
+/* СКРЫТОЕ */
+
+.hidden {
+  display: none !important;
+}
+
+/* АДАПТИВ */
+
+@media (min-width: 700px) {
+  .screen {
+    padding: 24px 24px 40px;
+  }
+
+  .gallery-slide {
+    flex-basis: 60%;
+    max-width: 60%;
+  }
+}

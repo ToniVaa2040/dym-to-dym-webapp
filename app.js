@@ -1,69 +1,74 @@
 // app.js
+// Логика мини-приложения Dым to Dым
 
+// ---------- Глобальное состояние ----------
 let currentCityId = null;
 let currentHookahId = null;
 let currentScreen = null;
 let currentParams = {};
 let screenStack = [];
 
+// ---------- DOM ----------
 const appContainer = document.getElementById("app");
 const backToCitiesBtn = document.getElementById("backToCitiesBtn");
 const backToHookahsBtn = document.getElementById("backToHookahsBtn");
 const goHomeBtn = document.getElementById("backToWelcomeBtn");
 const suggestionsBtn = document.getElementById("suggestionsBtn");
 
-/* ==========
-   ДАННЫЕ
-   ========== */
-
+// ---------- Данные ----------
 function getCities() {
-  return window.appData?.cities ?? [];
+  if (window.appData && Array.isArray(window.appData.cities)) {
+    return window.appData.cities;
+  }
+  return [];
 }
 
-function getCityById(id) {
-  return getCities().find((c) => c.id === id) || null;
+function getCityById(cityId) {
+  return getCities().find((c) => c.id === cityId) || null;
 }
 
-function getHookahsByCityId(id) {
-  const city = getCityById(id);
-  return city?.hookahs ?? [];
+function getHookahsByCityId(cityId) {
+  const city = getCityById(cityId);
+  if (!city || !Array.isArray(city.hookahs)) return [];
+  return city.hookahs;
 }
 
 function getHookahById(cityId, hookahId) {
   return getHookahsByCityId(cityId).find((h) => h.id === hookahId) || null;
 }
 
-/* ==========
-   УТИЛИТЫ
-   ========== */
-
-function normalizePhones(h) {
-  if (!h) return [];
-  if (Array.isArray(h.phones)) return h.phones;
-  if (Array.isArray(h.phone)) return h.phone;
-  if (typeof h.phone === "string") return [h.phone];
+// ---------- Утилиты телефонов / часов ----------
+function normalizePhones(hookah) {
+  if (!hookah) return [];
+  if (Array.isArray(hookah.phones)) return hookah.phones;
+  if (Array.isArray(hookah.phone)) return hookah.phone;
+  if (typeof hookah.phone === "string" && hookah.phone.trim() !== "") {
+    return [hookah.phone.trim()];
+  }
   return [];
 }
 
-function normalizeWorkingHours(h) {
-  if (!h) return null;
-  if (h.working_hours) return h.working_hours;
+function normalizeWorkingHours(hookah) {
+  if (!hookah) return null;
+  if (hookah.working_hours && typeof hookah.working_hours === "object") {
+    return hookah.working_hours;
+  }
 
-  const w = {};
-  const days = ["mon","tue","wed","thu","fri","sat","sun"];
-  let has = false;
+  const keys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+  const result = {};
+  let hasAny = false;
 
-  days.forEach(d => {
-    if (h[d]) {
-      w[d] = h[d];
-      has = true;
+  keys.forEach((k) => {
+    if (hookah[k]) {
+      result[k] = hookah[k];
+      hasAny = true;
     }
   });
 
-  return has ? w : null;
+  return hasAny ? result : null;
 }
 
-const DAY_KEYS = ["sun","mon","tue","wed","thu","fri","sat"];
+const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 const DAY_NAMES_RU = {
   mon: "понедельник",
   tue: "вторник",
@@ -74,96 +79,135 @@ const DAY_NAMES_RU = {
   sun: "воскресенье",
 };
 
-function parseHoursRange(h) {
-  if (!h || typeof h !== "string") return null;
-  const t = h.trim().toLowerCase();
+function parseHoursRange(hoursStr) {
+  if (!hoursStr || typeof hoursStr !== "string") return null;
+  const trimmed = hoursStr.trim().toLowerCase();
 
-  if (t === "круглосуточно" || t === "24/7" || t === "00:00–24:00") {
-    return {start: 0, end: 24*60, is24: true};
+  if (
+    trimmed === "круглосуточно" ||
+    trimmed === "24/7" ||
+    trimmed === "00:00–24:00"
+  ) {
+    return { start: 0, end: 24 * 60, is24: true };
   }
 
-  const parts = t.split("–");
+  const parts = trimmed.split("–");
   if (parts.length !== 2) return null;
 
-  function toMin(s) {
-    const [hh, mm] = s.split(":").map(Number);
-    if (isNaN(hh) || isNaN(mm)) return null;
+  const toMinutes = (str) => {
+    const [hh, mm] = str.split(":").map((v) => parseInt(v, 10));
+    if (Number.isNaN(hh) || Number.isNaN(mm)) return null;
     return hh * 60 + mm;
-  }
+  };
 
-  const start = toMin(parts[0]);
-  const end = toMin(parts[1]);
+  const start = toMinutes(parts[0]);
+  const end = toMinutes(parts[1]);
   if (start == null || end == null) return null;
 
-  return {start, end, is24:false};
+  return { start, end, is24: false };
 }
 
-function isOpenNow(h) {
-  const r = parseHoursRange(h);
-  if (!r) return null;
-  if (r.is24) return true;
+function isOpenNow(hoursStr) {
+  const range = parseHoursRange(hoursStr);
+  if (!range) return null;
+  if (range.is24) return true;
 
   const now = new Date();
-  const cur = now.getHours()*60 + now.getMinutes();
-  let {start, end} = r;
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
-  let crosses = false;
+  let { start, end } = range;
+  let crossesMidnight = false;
+
   if (end <= start) {
-    end += 24*60;
-    crosses = true;
+    end += 24 * 60;
+    crossesMidnight = true;
   }
 
-  let curMin = cur;
-  if (crosses && cur < start) curMin += 24*60;
+  let current = nowMinutes;
+  if (crossesMidnight && nowMinutes < start) {
+    current += 24 * 60;
+  }
 
-  return curMin >= start && curMin <= end;
+  return current >= start && current <= end;
 }
 
-function getTodayWorkingInfo(w) {
-  if (!w) return {dayName:"", hours:"нужно уточнить", isOpen:null};
+function getTodayWorkingInfo(workingHours) {
+  if (!workingHours) {
+    return { dayName: "", hours: "нужно уточнить", isOpen: null };
+  }
 
-  const d = new Date();
-  const key = DAY_KEYS[d.getDay()];
-  const dayName = DAY_NAMES_RU[key] ?? "";
-  const hours = w[key] ?? "нужно уточнить";
-  const open = isOpenNow(hours);
+  const now = new Date();
+  const jsDay = now.getDay();
+  const dayKey = DAY_KEYS[jsDay];
+  const dayName = DAY_NAMES_RU[dayKey] || "";
+  const hours = workingHours[dayKey] || "нужно уточнить";
+  const isOpen = isOpenNow(hours);
 
-  return {dayName, hours, isOpen: open};
+  return { dayName, hours, isOpen };
 }
 
-/* ==========
-   ПОИСК
-   ========== */
-
-function normalizeSearchString(v) {
-  return String(v ?? "").trim().toLowerCase();
+// ---------- Поиск ----------
+function normalizeSearchString(value) {
+  if (!value) return "";
+  return String(value).trim().toLowerCase();
 }
 
 function isMatch(value, query) {
   const q = normalizeSearchString(query);
+  if (!q) return true;
   const v = normalizeSearchString(value);
   return v.includes(q);
 }
 
-/* ==========
-   НАВИГАЦИЯ
-   ========== */
+// ---------- Навигация и анимация ----------
+function renderCurrentScreen() {
+  switch (currentScreen) {
+    case "welcome":
+      renderWelcomeScreen();
+      break;
+    case "cities":
+      renderCitiesScreen();
+      break;
+    case "hookahs":
+      renderHookahsScreen(currentParams.cityId);
+      break;
+    case "hookahDetails":
+      renderHookahDetailsScreen(currentParams.cityId, currentParams.hookahId);
+      break;
+    default:
+      renderWelcomeScreen();
+      break;
+  }
+}
 
-function navigateTo(screen, params = {}, opts = {}) {
-  const {replace = false} = opts;
+function applyScreenTransition(direction) {
+  const screenEl = appContainer.querySelector(".screen");
+  if (!screenEl) return;
+
+  // Сбрасываем классы, чтобы анимация перезапускалась
+  screenEl.classList.remove("screen--animate-in-forward", "screen--animate-in-back");
+  // Форсим перерасчёт стиля
+  void screenEl.offsetWidth;
+
+  if (direction === "back") {
+    screenEl.classList.add("screen--animate-in-back");
+  } else {
+    screenEl.classList.add("screen--animate-in-forward");
+  }
+}
+
+function navigateTo(screen, params = {}, options = {}) {
+  const { replace = false, direction = "forward" } = options;
 
   if (!replace && currentScreen) {
-    screenStack.push({screen: currentScreen, params: currentParams});
+    screenStack.push({ screen: currentScreen, params: currentParams });
   }
 
   currentScreen = screen;
-  currentParams = params;
+  currentParams = params || {};
 
-  if (screen === "welcome") renderWelcomeScreen();
-  else if (screen === "cities") renderCitiesScreen();
-  else if (screen === "hookahs") renderHookahsScreen(params.cityId);
-  else if (screen === "hookahDetails") renderHookahDetailsScreen(params.cityId, params.hookahId);
-  else renderWelcomeScreen();
+  renderCurrentScreen();
+  applyScreenTransition(direction);
 }
 
 function navigateBack() {
@@ -171,63 +215,97 @@ function navigateBack() {
 
   const prev = screenStack.pop();
   currentScreen = prev.screen;
-  currentParams = prev.params;
+  currentParams = prev.params || {};
 
-  if (currentScreen === "welcome") renderWelcomeScreen();
-  else if (currentScreen === "cities") renderCitiesScreen();
-  else if (currentScreen === "hookahs") renderHookahsScreen(currentParams.cityId);
-  else if (currentScreen === "hookahDetails") renderHookahDetailsScreen(currentParams.cityId, currentParams.hookahId);
+  renderCurrentScreen();
+  applyScreenTransition("back");
 }
 
-function setFooterState({showBackToCities, showBackToHookahs, showHome, showSuggestions}) {
-  backToCitiesBtn.classList.toggle("hidden", !showBackToCities);
-  backToHookahsBtn.classList.toggle("hidden", !showBackToHookahs);
-  goHomeBtn.classList.toggle("hidden", !showHome);
-  suggestionsBtn.classList.toggle("hidden", !showSuggestions);
+// ---------- Telegram WebApp: отключаем свайп-вниз ----------
+function initTelegramWebApp() {
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (!tg) return;
+
+  if (typeof tg.disableVerticalSwipes === "function") {
+    tg.disableVerticalSwipes();
+  }
+  if (typeof tg.expand === "function") {
+    tg.expand();
+  }
 }
 
-/* ==========
-   СВАЙП-НАЗАД
-   ========== */
-
+// ---------- Свайп-назад (слева направо) ----------
 function setupSwipeNavigation() {
-  let startX = null;
-  let startY = null;
-  let startT = 0;
+  if (!appContainer) return;
 
-  appContainer.addEventListener("touchstart", (e) => {
-    const t = e.touches[0];
-    startX = t.clientX;
-    startY = t.clientY;
-    startT = Date.now();
+  let touchStartX = null;
+  let touchStartY = null;
+  let touchStartTime = 0;
+
+  appContainer.addEventListener("touchstart", (event) => {
+    const touch = event.touches[0];
+    if (!touch) return;
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    touchStartTime = Date.now();
   });
 
-  appContainer.addEventListener("touchend", (e) => {
-    if (startX == null) return;
+  appContainer.addEventListener("touchend", (event) => {
+    if (touchStartX === null || touchStartY === null) return;
+    const touch = event.changedTouches[0];
+    if (!touch) return;
 
-    const t = e.changedTouches[0];
-    const dx = t.clientX - startX;
-    const dy = t.clientY - startY;
-    const dt = Date.now() - startT;
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    const dt = Date.now() - touchStartTime;
 
-    const edge = 40;
-    const minD = 50;
-    const maxDy = 80;
-    const maxTime = 600;
+    const minDistance = 50;
+    const maxVerticalOffset = 80;
+    const maxDuration = 600;
+    const edgeZone = 40;
 
-    if (startX < edge && dx > minD && Math.abs(dy) < maxDy && dt < maxTime) {
+    if (
+      dt <= maxDuration &&
+      dx > minDistance &&
+      Math.abs(dy) < maxVerticalOffset &&
+      touchStartX < edgeZone
+    ) {
       navigateBack();
     }
 
-    startX = null;
+    touchStartX = null;
+    touchStartY = null;
   });
 }
 
-/* ==========
-   ЭКРАНЫ
-   ========== */
+// ---------- Футер ----------
+function setFooterState({
+  showBackToCities,
+  showBackToHookahs,
+  showHome,
+  showSuggestions,
+}) {
+  if (backToCitiesBtn) {
+    backToCitiesBtn.classList.toggle("hidden", !showBackToCities);
+  }
+  if (backToHookahsBtn) {
+    backToHookahsBtn.classList.toggle("hidden", !showBackToHookahs);
+  }
+  if (goHomeBtn) {
+    goHomeBtn.classList.toggle("hidden", !showHome);
+  }
+  if (suggestionsBtn) {
+    suggestionsBtn.classList.toggle("hidden", !showSuggestions);
+  }
+}
 
+// ---------- Экраны ----------
+
+// Welcome
 function renderWelcomeScreen() {
+  currentCityId = null;
+  currentHookahId = null;
+
   setFooterState({
     showBackToCities: false,
     showBackToHookahs: false,
@@ -236,30 +314,42 @@ function renderWelcomeScreen() {
   });
 
   appContainer.innerHTML = `
-    <section class="screen welcome-screen fade-in">
+    <section class="screen welcome-screen">
       <div class="welcome-image-wrapper">
-        <img src="assets/welcome_image.PNG" class="welcome-image" />
+        <img src="assets/welcome_image.PNG" alt="Добро пожаловать" class="welcome-image" />
       </div>
-      <h1 class="welcome-title">Dым to Dым</h1>
-      <p class="welcome-subtitle">Выбери город — дальше я помогу</p>
-
-      <button id="goToCitiesBtn" class="primary-btn">Перейти к выбору города</button>
-
-      <div class="neshop-block">
-        <p class="neshop-text">За продукцией, табаком и кальянами ↓</p>
-        <a href="https://t.me/Ne_ShopBot?startapp" target="_blank" class="primary-btn">
-          НЕШОП
-        </a>
+      <div class="welcome-content">
+        <h1 class="welcome-title">Dым to Dым</h1>
+        <p class="welcome-subtitle">Выбери город — дальше я помогу с кальянной</p>
+        <button id="goToCitiesBtn" class="primary-btn">Перейти к выбору города</button>
+        <div class="neshop-block">
+          <p class="neshop-text">За продукцией, табаком и кальянами ↓</p>
+          <a
+            href="https://t.me/Ne_ShopBot?startapp"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="primary-btn neshop-btn"
+          >
+            НЕШОП
+          </a>
+        </div>
       </div>
     </section>
   `;
 
-  document.getElementById("goToCitiesBtn").onclick = () => {
-    navigateTo("cities");
-  };
+  const goToCitiesBtn = document.getElementById("goToCitiesBtn");
+  if (goToCitiesBtn) {
+    goToCitiesBtn.addEventListener("click", () => {
+      navigateTo("cities", {}, { direction: "forward" });
+    });
+  }
 }
 
+// Выбор города + глобальный поиск
 function renderCitiesScreen() {
+  currentCityId = null;
+  currentHookahId = null;
+
   setFooterState({
     showBackToCities: false,
     showBackToHookahs: false,
@@ -269,102 +359,167 @@ function renderCitiesScreen() {
 
   const cities = getCities();
 
+  if (!cities.length) {
+    appContainer.innerHTML = `
+      <section class="screen cities-screen">
+        <h2 class="screen-title">ВЫБОР ГОРОДА</h2>
+        <p class="empty-message">Города пока не добавлены.</p>
+      </section>
+    `;
+    return;
+  }
+
   appContainer.innerHTML = `
-    <section class="screen fade-in">
+    <section class="screen cities-screen">
       <h2 class="screen-title">ВЫБОР ГОРОДА</h2>
-
       <div class="search-bar">
-        <label class="search-label">Поиск по городам и заведениям</label>
-        <input id="citiesSearch" class="search-input" placeholder="Начни вводить..." />
+        <label class="search-label" for="citiesSearchInput">Поиск по городам и заведениям</label>
+        <input
+          id="citiesSearchInput"
+          class="search-input"
+          type="text"
+          placeholder="Начни вводить название города или заведения"
+        />
       </div>
-
-      <div id="citiesList" class="cards-list"></div>
+      <div id="citiesOrHookahsContainer" class="cards-list"></div>
     </section>
   `;
 
-  const list = document.getElementById("citiesList");
-  const input = document.getElementById("citiesSearch");
+  const listContainer = document.getElementById("citiesOrHookahsContainer");
+  const searchInput = document.getElementById("citiesSearchInput");
 
-  function drawCities(arr) {
-    list.innerHTML = arr
-      .map(
-        (c) => `
-        <article class="card city-card" data-id="${c.id}">
-          <div class="city-card-image-wrapper">
-            <img src="assets/${c.image}" class="city-card-image" />
-          </div>
-          <h3 class="city-card-title">${c.name}</h3>
-        </article>
-      `
-      )
+  if (!listContainer || !searchInput) return;
+
+  function renderCitiesList(list) {
+    const html = list
+      .map((city) => {
+        const imgSrc = city.image ? `assets/${city.image}` : "";
+        return `
+          <article class="card city-card" data-city-id="${city.id}">
+            <div class="city-card-image-wrapper">
+              ${
+                imgSrc
+                  ? `<img src="${imgSrc}" alt="${city.name}" class="city-card-image" loading="lazy" />`
+                  : ""
+              }
+            </div>
+            <div class="city-card-content">
+              <h2 class="city-card-title">${city.name}</h2>
+            </div>
+          </article>
+        `;
+      })
       .join("");
 
-    list.querySelectorAll(".city-card").forEach((el) => {
-      el.onclick = () => {
-        navigateTo("hookahs", {cityId: el.dataset.id});
-      };
+    listContainer.innerHTML = html;
+
+    const cityCards = listContainer.querySelectorAll(".city-card");
+    cityCards.forEach((card) => {
+      card.addEventListener("click", () => {
+        const cityId = card.dataset.cityId;
+        currentCityId = cityId;
+        navigateTo("hookahs", { cityId }, { direction: "forward" });
+      });
     });
   }
 
-  function drawHookahs(arr) {
-    list.innerHTML = arr
-      .map(
-        ({city, hookah}) => `
-      <article class="card hookah-card" data-city="${city.id}" data-id="${hookah.id}">
-        <div class="hookah-card-main">
-          <div class="hookah-card-info">
-            <h3 class="hookah-card-title">${hookah.name}</h3>
-            <p class="hookah-card-rating">Рейтинг: <span>${hookah.rating ?? "—"}</span></p>
-            <p class="hookah-card-city">Город: ${city.name}</p>
-            <p class="hookah-card-address">${hookah.address ?? ""}</p>
-          </div>
-          <div class="hookah-card-image-wrapper">
-            <img src="assets/${hookah.image}" class="hookah-card-image" />
-          </div>
-        </div>
-      </article>
-    `
-      )
+  function renderGlobalHookahsList(hookahMatches) {
+    const html = hookahMatches
+      .map(({ city, hookah }) => {
+        const imgSrc = hookah.image ? `assets/${hookah.image}` : "";
+        const rating = hookah.rating ? String(hookah.rating) : "—";
+        return `
+          <article class="card hookah-card" data-city-id="${city.id}" data-hookah-id="${hookah.id}">
+            <div class="hookah-card-main">
+              <div class="hookah-card-info">
+                <h3 class="hookah-card-title">${hookah.name}</h3>
+                <p class="hookah-card-rating">Рейтинг: <span>${rating}</span></p>
+                <p class="hookah-card-city">Город: ${city.name}</p>
+                ${
+                  hookah.address
+                    ? `<p class="hookah-card-address">${hookah.address}</p>`
+                    : ""
+                }
+              </div>
+              ${
+                imgSrc
+                  ? `<div class="hookah-card-image-wrapper">
+                      <img src="${imgSrc}" alt="${hookah.name}" class="hookah-card-image" loading="lazy" />
+                    </div>`
+                  : ""
+              }
+            </div>
+          </article>
+        `;
+      })
       .join("");
 
-    list.querySelectorAll(".hookah-card").forEach((el) => {
-      const city = el.dataset.city;
-      const hid = el.dataset.id;
-      el.onclick = () => navigateTo("hookahDetails", {cityId: city, hookahId: hid});
+    listContainer.innerHTML = html;
+
+    const hookahCards = listContainer.querySelectorAll(".hookah-card");
+    hookahCards.forEach((card) => {
+      card.addEventListener("click", () => {
+        const cityId = card.dataset.cityId;
+        const hookahId = card.dataset.hookahId;
+        currentCityId = cityId;
+        currentHookahId = hookahId;
+        navigateTo("hookahDetails", { cityId, hookahId }, { direction: "forward" });
+      });
     });
   }
 
-  function search() {
-    const q = input.value.trim().toLowerCase();
-    if (!q) {
-      drawCities(cities);
+  function applySearch() {
+    const query = searchInput.value || "";
+
+    if (!query) {
+      renderCitiesList(cities);
       return;
     }
 
-    let cityMatches = [];
-    let hookahMatches = [];
+    const allCities = getCities();
+    const hookahMatches = [];
+    const cityMatches = [];
 
-    cities.forEach((c) => {
-      if (isMatch(c.name, q) || isMatch(c.id, q)) cityMatches.push(c);
-
-      c.hookahs.forEach((h) => {
-        if (isMatch(h.name, q) || isMatch(h.id, q)) {
-          hookahMatches.push({city: c, hookah: h});
+    allCities.forEach((city) => {
+      if (isMatch(city.name, query) || isMatch(city.id, query)) {
+        cityMatches.push(city);
+      }
+      const hookahs = getHookahsByCityId(city.id);
+      hookahs.forEach((hookah) => {
+        if (isMatch(hookah.name, query) || isMatch(hookah.id, query)) {
+          hookahMatches.push({ city, hookah });
         }
       });
     });
 
-    if (hookahMatches.length) drawHookahs(hookahMatches);
-    else if (cityMatches.length) drawCities(cityMatches);
-    else list.innerHTML = `<p class="empty-message">Ничего не найдено</p>`;
+    if (hookahMatches.length) {
+      renderGlobalHookahsList(hookahMatches);
+    } else if (cityMatches.length) {
+      renderCitiesList(cityMatches);
+    } else {
+      listContainer.innerHTML = `
+        <p class="empty-message">Ничего не найдено. Попробуй изменить запрос.</p>
+      `;
+    }
   }
 
-  input.oninput = search;
+  searchInput.addEventListener("input", applySearch);
 
-  drawCities(cities);
+  renderCitiesList(cities);
 }
 
+// Выбор заведений в городе
 function renderHookahsScreen(cityId) {
+  const city = getCityById(cityId);
+
+  if (!city) {
+    navigateTo("cities", {}, { replace: true, direction: "back" });
+    return;
+  }
+
+  currentCityId = cityId;
+  currentHookahId = null;
+
   setFooterState({
     showBackToCities: true,
     showBackToHookahs: false,
@@ -372,72 +527,126 @@ function renderHookahsScreen(cityId) {
     showSuggestions: false,
   });
 
-  const city = getCityById(cityId);
   const hookahs = getHookahsByCityId(cityId);
 
+  if (!hookahs.length) {
+    appContainer.innerHTML = `
+      <section class="screen hookahs-screen">
+        <h2 class="screen-title">ВЫБОР КАЛЬЯННОЙ</h2>
+        <p class="screen-subtitle">${city.name}</p>
+        <p class="empty-message">В этом городе пока нет заведений.</p>
+      </section>
+    `;
+    return;
+  }
+
   appContainer.innerHTML = `
-    <section class="screen fade-in">
+    <section class="screen hookahs-screen">
       <h2 class="screen-title">ВЫБОР КАЛЬЯННОЙ</h2>
       <p class="screen-subtitle">${city.name}</p>
-
       <div class="search-bar">
-        <label class="search-label">Поиск по заведениям города</label>
-        <input id="hookahsSearch" class="search-input" placeholder="Начни вводить..." />
+        <label class="search-label" for="hookahsSearchInput">Поиск по заведениям в этом городе</label>
+        <input
+          id="hookahsSearchInput"
+          class="search-input"
+          type="text"
+          placeholder="Начни вводить название заведения"
+        />
       </div>
-
-      <div id="hookahsList" class="cards-list"></div>
+      <div id="hookahsContainer" class="cards-list"></div>
     </section>
   `;
 
-  const list = document.getElementById("hookahsList");
-  const input = document.getElementById("hookahsSearch");
+  const listContainer = document.getElementById("hookahsContainer");
+  const searchInput = document.getElementById("hookahsSearchInput");
 
-  function draw(arr) {
-    list.innerHTML = arr
-      .map(
-        (h) => `
-      <article class="card hookah-card" data-id="${h.id}">
-        <div class="hookah-card-main">
-          <div class="hookah-card-info">
-            <h3 class="hookah-card-title">${h.name}</h3>
-            <p class="hookah-card-rating">Рейтинг: <span>${h.rating ?? "—"}</span></p>
-            <p class="hookah-card-address">${h.address ?? ""}</p>
-          </div>
-          <div class="hookah-card-image-wrapper">
-            <img src="assets/${h.image}" class="hookah-card-image"/>
-          </div>
-        </div>
-      </article>
-    `
-      )
+  if (!listContainer || !searchInput) return;
+
+  function renderHookahsList(list) {
+    const html = list
+      .map((h) => {
+        const imgSrc = h.image ? `assets/${h.image}` : "";
+        const rating = h.rating ? String(h.rating) : "—";
+        return `
+          <article class="card hookah-card" data-hookah-id="${h.id}">
+            <div class="hookah-card-main">
+              <div class="hookah-card-info">
+                <h3 class="hookah-card-title">${h.name}</h3>
+                <p class="hookah-card-rating">Рейтинг: <span>${rating}</span></p>
+                ${
+                  h.address
+                    ? `<p class="hookah-card-address">${h.address}</p>`
+                    : ""
+                }
+              </div>
+              ${
+                imgSrc
+                  ? `<div class="hookah-card-image-wrapper">
+                      <img src="${imgSrc}" alt="${h.name}" class="hookah-card-image" loading="lazy" />
+                    </div>`
+                  : ""
+              }
+            </div>
+          </article>
+        `;
+      })
       .join("");
 
-    list.querySelectorAll(".hookah-card").forEach((el) => {
-      el.onclick = () => {
-        navigateTo("hookahDetails", {cityId, hookahId: el.dataset.id});
-      };
+    listContainer.innerHTML = html;
+
+    const hookahCards = listContainer.querySelectorAll(".hookah-card");
+    hookahCards.forEach((card) => {
+      card.addEventListener("click", () => {
+        const hookahId = card.dataset.hookahId;
+        currentHookahId = hookahId;
+        navigateTo(
+          "hookahDetails",
+          { cityId, hookahId },
+          { direction: "forward" }
+        );
+      });
     });
   }
 
-  function search() {
-    const q = input.value.trim().toLowerCase();
-    if (!q) {
-      draw(hookahs);
+  function applySearch() {
+    const query = searchInput.value || "";
+
+    if (!query) {
+      renderHookahsList(hookahs);
       return;
     }
 
-    const filtered = hookahs.filter((h) => isMatch(h.name, q) || isMatch(h.id, q));
+    const filtered = hookahs.filter(
+      (h) => isMatch(h.name, query) || isMatch(h.id, query)
+    );
 
-    if (filtered.length) draw(filtered);
-    else list.innerHTML = `<p class="empty-message">Ничего не найдено</p>`;
+    if (filtered.length) {
+      renderHookahsList(filtered);
+    } else {
+      listContainer.innerHTML = `
+        <p class="empty-message">В этом городе ничего не нашлось по такому запросу.</p>
+      `;
+    }
   }
 
-  input.oninput = search;
+  searchInput.addEventListener("input", applySearch);
 
-  draw(hookahs);
+  renderHookahsList(hookahs);
 }
 
+// Карточка заведения
 function renderHookahDetailsScreen(cityId, hookahId) {
+  const city = getCityById(cityId);
+  const hookah = getHookahById(cityId, hookahId);
+
+  if (!city || !hookah) {
+    navigateTo("hookahs", { cityId }, { replace: true, direction: "back" });
+    return;
+  }
+
+  currentCityId = cityId;
+  currentHookahId = hookahId;
+
   setFooterState({
     showBackToCities: false,
     showBackToHookahs: true,
@@ -445,134 +654,197 @@ function renderHookahDetailsScreen(cityId, hookahId) {
     showSuggestions: false,
   });
 
-  const city = getCityById(cityId);
-  const h = getHookahById(cityId, hookahId);
-
-  const gallery = h.gallery ?? [];
-  const phones = normalizePhones(h);
-  const w = normalizeWorkingHours(h);
-  const today = getTodayWorkingInfo(w);
+  const gallery = Array.isArray(hookah.gallery) ? hookah.gallery : [];
+  const phones = normalizePhones(hookah);
+  const workingHours = normalizeWorkingHours(hookah);
+  const todayInfo = getTodayWorkingInfo(workingHours);
 
   const galleryHtml = gallery
     .map(
-      (g) => `
-    <div class="gallery-slide">
-      <img src="assets/${g}" class="gallery-image" />
-    </div>`
+      (img) => `
+        <div class="gallery-slide">
+          <img src="assets/${img}" alt="${hookah.name}" class="gallery-image" loading="lazy" />
+        </div>
+      `
     )
     .join("");
 
-  const phonesHtml =
-    phones.length > 0
-      ? `<ul class="hookah-phones">
-      ${phones.map((p) => `<li><a href="tel:${p.replace(/\s+/g,"")}">${p}</a></li>`).join("")}
-    </ul>`
-      : `<p class="hookah-phones-empty">Телефоны: нужно уточнить</p>`;
-
-  let hoursHtml = "";
-  if (w) {
-    hoursHtml = `
-      <table class="working-hours-table">
-        ${["mon","tue","wed","thu","fri","sat","sun"]
-          .map(
-            (d) => `
-          <tr>
-            <td class="wh-day">${DAY_NAMES_RU[d]}</td>
-            <td class="wh-hours">${w[d] ?? "нужно уточнить"}</td>
-          </tr>`
-          )
+  let phonesHtml = "";
+  if (phones.length > 0) {
+    phonesHtml = `
+      <ul class="hookah-phones">
+        ${phones
+          .map((p) => {
+            const clean = String(p).replace(/\s+/g, "");
+            return `<li><button class="phone-btn" data-phone="${clean}">${p}</button></li>`;
+          })
           .join("")}
+      </ul>
+    `;
+  } else {
+    phonesHtml = `<p class="hookah-phones-empty">Телефоны: нужно уточнить</p>`;
+  }
+
+  let workingHoursHtml = "";
+  if (workingHours) {
+    const rows = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+      .map((key) => {
+        const label = DAY_NAMES_RU[key] || key;
+        const value = workingHours[key] || "нужно уточнить";
+        return `
+          <tr>
+            <td class="wh-day">${label}</td>
+            <td class="wh-hours">${value}</td>
+          </tr>
+        `;
+      })
+      .join("");
+
+    workingHoursHtml = `
+      <table class="working-hours-table">
+        <tbody>
+          ${rows}
+        </tbody>
       </table>
     `;
-  }
-
-  let statusText = "";
-  let statusClass = "";
-  if (today.hours === "нужно уточнить") {
-    statusText = "Сегодня график работы нужно уточнить";
-    statusClass = "status-unknown";
-  } else if (today.isOpen === true) {
-    statusText = `Сейчас открыто — работает сегодня: ${today.hours}`;
-    statusClass = "status-open";
-  } else if (today.isOpen === false) {
-    statusText = `Сейчас закрыто — работает сегодня: ${today.hours}`;
-    statusClass = "status-closed";
   } else {
-    statusText = `Сегодня ${today.dayName}, работает ${today.hours}`;
-    statusClass = "status-unknown";
+    workingHoursHtml = `<p class="hookah-working-empty">Часы работы: нужно уточнить</p>`;
   }
 
-  const yandexBtn =
-    h.yandex_map?.url
-      ? `<a href="${h.yandex_map.url}" target="_blank" class="primary-btn">Открыть на Яндекс.Картах</a>`
+  let todayStatusText = "";
+  let todayStatusClass = "";
+
+  if (todayInfo.hours === "нужно уточнить" || todayInfo.dayName === "") {
+    todayStatusText = "Сегодня график работы нужно уточнить";
+    todayStatusClass = "status-unknown";
+  } else if (todayInfo.isOpen === null) {
+    todayStatusText = `Сегодня ${todayInfo.dayName}, работает: ${todayInfo.hours}`;
+    todayStatusClass = "status-unknown";
+  } else if (todayInfo.isOpen) {
+    todayStatusText = `Сейчас открыто — работает сегодня: ${todayInfo.hours}`;
+    todayStatusClass = "status-open";
+  } else {
+    todayStatusText = `Сейчас закрыто — работает сегодня: ${todayInfo.hours}`;
+    todayStatusClass = "status-closed";
+  }
+
+  const yandexButtonHtml =
+    hookah.yandex_map && hookah.yandex_map.url
+      ? `
+        <a href="${hookah.yandex_map.url}" target="_blank" class="primary-btn yandex-btn">
+          Открыть на Яндекс.Картах
+        </a>
+      `
       : "";
 
-  const tags = `
+  const tagsHtml = `
     <div class="hookah-tags">
-      <span class="hookah-tag">Еда: ${h.food ?? "нужно уточнить"}</span>
-      <span class="hookah-tag">Алкоголь: ${h.alcohol ?? "нужно уточнить"}</span>
-      <span class="hookah-tag">Напитки: ${h.drinks ?? "нужно уточнить"}</span>
+      <span class="hookah-tag">Еда: ${hookah.food || "нужно уточнить"}</span>
+      <span class="hookah-tag">Алкоголь: ${hookah.alcohol || "нужно уточнить"}</span>
+      <span class="hookah-tag">Напитки: ${hookah.drinks || "нужно уточнить"}</span>
     </div>
   `;
 
-  const notes =
-    h.notes
-      ? `<div class="hookah-notes"><h3>Комментарий</h3><p>${h.notes}</p></div>`
+  const notesHtml =
+    hookah.notes && hookah.notes.trim() !== ""
+      ? `
+        <div class="hookah-notes">
+          <h3>Комментарий от Dым to Dым</h3>
+          <p>${hookah.notes}</p>
+        </div>
+      `
       : "";
 
-  const video =
-    h.video_review
-      ? `<div class="hookah-video"><h3>Видеообзор</h3><p>${h.video_review}</p></div>`
+  const videoHtml =
+    hookah.video_review && hookah.video_review.trim() !== ""
+      ? `
+        <div class="hookah-video">
+          <h3>Видеообзор</h3>
+          <p>${hookah.video_review}</p>
+        </div>
+      `
       : "";
 
   appContainer.innerHTML = `
-    <section class="screen hookah-details-screen fade-in">
-      <h2 class="hookah-name">${h.name}</h2>
-      <p class="hookah-city">${city.name}</p>
+    <section class="screen hookah-details-screen">
+      <header class="hookah-header">
+        <h2 class="hookah-name">${hookah.name}</h2>
+        <p class="hookah-city">${city.name}</p>
+      </header>
 
-      <div class="gallery-container">${galleryHtml}</div>
+      ${
+        galleryHtml
+          ? `<div class="gallery-container">${galleryHtml}</div>`
+          : ""
+      }
 
       <div class="hookah-main-info">
-        <p class="hookah-rating">Рейтинг: <span>${h.rating ?? "—"}</span></p>
-        <p class="hookah-address">${h.address ?? ""}</p>
-
+        <p class="hookah-rating">Рейтинг: <span>${hookah.rating || "—"}</span></p>
+        ${
+          hookah.address
+            ? `<p class="hookah-address">${hookah.address}</p>`
+            : ""
+        }
         ${phonesHtml}
-        ${tags}
+        ${tagsHtml}
       </div>
 
       <div class="hookah-working-block">
         <h3>Часы работы</h3>
-        ${hoursHtml}
-        <div class="hookah-today-status ${statusClass}">
-          ${statusText}
+        ${workingHoursHtml}
+        <div class="hookah-today-status ${todayStatusClass}">
+          ${todayStatusText}
         </div>
       </div>
 
-      ${notes}
-      ${video}
+      ${notesHtml}
+      ${videoHtml}
 
-      <div class="hookah-actions">${yandexBtn}</div>
+      <div class="hookah-actions">
+        ${yandexButtonHtml}
+      </div>
     </section>
   `;
+
+  // Навешиваем клик по номерам, чтобы запускать звонилку
+  const phoneButtons = appContainer.querySelectorAll(".phone-btn");
+  phoneButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const phone = btn.dataset.phone;
+      if (!phone) return;
+      const telUrl = `tel:${phone}`;
+      try {
+        window.location.href = telUrl;
+      } catch (e) {
+        console.error("Не удалось открыть звонилку", e);
+      }
+    });
+  });
 }
 
-/* ==========
-   КНОПКИ НИЗУ
-   ========== */
+// ---------- Кнопки внизу ----------
+if (backToCitiesBtn) {
+  backToCitiesBtn.addEventListener("click", () => {
+    navigateBack();
+  });
+}
 
-goHomeBtn.onclick = () => {
-  screenStack = [];
-  navigateTo("welcome", {}, {replace:true});
-};
+if (backToHookahsBtn) {
+  backToHookahsBtn.addEventListener("click", () => {
+    navigateBack();
+  });
+}
 
-backToCitiesBtn.onclick = () => navigateBack();
-backToHookahsBtn.onclick = () => navigateBack();
+if (goHomeBtn) {
+  goHomeBtn.addEventListener("click", () => {
+    screenStack = [];
+    navigateTo("welcome", {}, { replace: true, direction: "back" });
+  });
+}
 
-/* ==========
-   СТАРТ
-   ========== */
-
+// ---------- Старт ----------
 document.addEventListener("DOMContentLoaded", () => {
-  navigateTo("welcome", {}, {replace:true});
+  initTelegramWebApp();
+  navigateTo("welcome", {}, { replace: true, direction: "forward" });
   setupSwipeNavigation();
 });
