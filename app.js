@@ -274,6 +274,7 @@ function initTelegramWebApp() {
 }
 
 // ---------- Свайп-назад (слева направо) ----------
+// ---------- Свайп-назад (строго из левого края и из "рабочей зоны" по вертикали) ----------
 function setupSwipeNavigation() {
   if (!appContainer) return;
 
@@ -281,16 +282,36 @@ function setupSwipeNavigation() {
   let touchStartY = null;
   let touchStartTime = 0;
 
+  // Верхняя зона, где мы НЕ обрабатываем свайп (чтобы не лезть в "шапку" Телеги)
+  const TOP_IGNORE = 80; // пикселей от верха
+  // Нижняя зона, где тоже игнорируем (чтобы не конфликтовать с системой)
+  const BOTTOM_IGNORE = 120; // пикселей от низа
+
   appContainer.addEventListener("touchstart", (event) => {
     const touch = event.touches[0];
     if (!touch) return;
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
+
+    const startX = touch.clientX;
+    const startY = touch.clientY;
+
+    const viewportHeight =
+      window.innerHeight || document.documentElement.clientHeight;
+
+    // Если палец слишком близко к верху или низу — вообще не считаем этот жест
+    if (startY < TOP_IGNORE || startY > viewportHeight - BOTTOM_IGNORE) {
+      touchStartX = null;
+      touchStartY = null;
+      return;
+    }
+
+    touchStartX = startX;
+    touchStartY = startY;
     touchStartTime = Date.now();
   });
 
   appContainer.addEventListener("touchend", (event) => {
     if (touchStartX === null || touchStartY === null) return;
+
     const touch = event.changedTouches[0];
     if (!touch) return;
 
@@ -298,17 +319,18 @@ function setupSwipeNavigation() {
     const dy = touch.clientY - touchStartY;
     const dt = Date.now() - touchStartTime;
 
-    const minDistance = 50;
-    const maxVerticalOffset = 80;
-    const maxDuration = 600;
-    const edgeZone = 40;
+    // Пороговые значения для "нормального" свайпа-назад
+    const minDistance = 50; // сколько минимум нужно провести по X
+    const maxVerticalOffset = 40; // насколько можно "гулять" по Y (делаем строже)
+    const maxDuration = 500; // максимум по времени (миллисекунды)
+    const edgeZone = 40; // свайп должен начинаться из левой "кромки" экрана
 
-    if (
-      dt <= maxDuration &&
-      dx > minDistance &&
-      Math.abs(dy) < maxVerticalOffset &&
-      touchStartX < edgeZone
-    ) {
+    const isFastEnough = dt <= maxDuration;
+    const isHorizontalEnough =
+      dx > minDistance && Math.abs(dy) < maxVerticalOffset;
+    const isFromLeftEdge = touchStartX < edgeZone;
+
+    if (isFastEnough && isHorizontalEnough && isFromLeftEdge) {
       navigateBack();
     }
 
@@ -316,6 +338,7 @@ function setupSwipeNavigation() {
     touchStartY = null;
   });
 }
+
 
 // ---------- Футер ----------
 function setFooterState({
