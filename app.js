@@ -697,7 +697,7 @@ function renderHookahDetailsScreen(cityId, hookahId) {
     )
     .join("");
 
-  // --- телефоны: клик -> popup с номером и кнопкой "Скопировать" ---
+  // телефоны: кнопка, по клику — попытка открыть dialer
   let phonesHtml = "";
   if (phones.length > 0) {
     phonesHtml = `
@@ -843,45 +843,55 @@ function renderHookahDetailsScreen(cityId, hookahId) {
     </section>
   `;
 
-  // обработчик: показать popup с номером и кнопкой "Скопировать"
+  // обработчик: попытка открыть dialer максимально нагло
   const phoneButtons = appContainer.querySelectorAll(".phone-btn");
   phoneButtons.forEach((btn) => {
-    btn.addEventListener("click", async () => {
+    btn.addEventListener("click", () => {
       const raw = btn.dataset.phone;
       if (!raw) return;
 
       const display = btn.textContent.trim();
+      const telUrl = `tel:${raw}`;
       const tg = window.Telegram && window.Telegram.WebApp;
+      let opened = false;
 
-      // если есть showPopup — используем нативный попап Телеги
-      if (tg && typeof tg.showPopup === "function") {
-        tg.showPopup(
-          {
-            title: "Позвонить в заведение",
-            message: display,
-            buttons: [
-              { id: "copy", type: "default", text: "Скопировать номер" },
-              { id: "close", type: "cancel", text: "Закрыть" },
-            ],
-          },
-          async (buttonId) => {
-            if (buttonId === "copy") {
-              try {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                  await navigator.clipboard.writeText(display);
-                  tg.showAlert("Номер скопирован");
-                } else {
-                  tg.showAlert(`Скопируй номер вручную: ${display}`);
-                }
-              } catch (e) {
-                tg.showAlert(`Скопируй номер вручную: ${display}`);
-              }
-            }
-          }
-        );
-      } else {
-        // fallback: просто alert
-        alert(`Телефон заведения: ${display}`);
+      // 1. Пробуем через openLink (официальный способ, но tel: могут зарезать)
+      try {
+        if (tg && typeof tg.openLink === "function") {
+          tg.openLink(telUrl);
+          opened = true;
+        }
+      } catch (e) {
+        console.warn("tg.openLink tel: не сработал", e);
+      }
+
+      // 2. Прямой переход через location.href
+      if (!opened) {
+        try {
+          window.location.href = telUrl;
+          opened = true;
+        } catch (e) {
+          console.warn("location.href tel: не сработал", e);
+        }
+      }
+
+      // 3. Попытка через window.open
+      if (!opened) {
+        try {
+          window.open(telUrl, "_self");
+          opened = true;
+        } catch (e) {
+          console.warn("window.open tel: не сработал", e);
+        }
+      }
+
+      // 4. Если всё заблокировали — хотя бы показать номер
+      if (!opened) {
+        if (tg && typeof tg.showAlert === "function") {
+          tg.showAlert(`Не удалось открыть звонилку.\nТелефон: ${display}`);
+        } else {
+          alert(`Телефон заведения: ${display}`);
+        }
       }
     });
   });
