@@ -219,20 +219,50 @@ function navigateBack() {
   applyScreenTransition("back");
 }
 
-// ---------- Telegram WebApp: отключаем свайп-вниз ----------
+// ---------- Telegram WebApp: свайпы и fullscreen ----------
 function initTelegramWebApp() {
   const tg = window.Telegram && window.Telegram.WebApp;
   if (!tg) return;
 
-  if (typeof tg.disableVerticalSwipes === "function") {
-    tg.disableVerticalSwipes();
-  }
+  // Разворачиваем на максимум
   if (typeof tg.expand === "function") {
     tg.expand();
   }
+
+  // Старый метод (может не работать, но пробуем)
+  if (typeof tg.disableVerticalSwipes === "function") {
+    tg.disableVerticalSwipes();
+  }
+
+  // Новый низкоуровневый event web_app_setup_swipe_behavior
+  try {
+    const payload = JSON.stringify({ allow_vertical_swipe: false });
+
+    // Мобильные клиенты
+    if (
+      window.TelegramWebviewProxy &&
+      typeof window.TelegramWebviewProxy.postEvent === "function"
+    ) {
+      window.TelegramWebviewProxy.postEvent(
+        "web_app_setup_swipe_behavior",
+        payload
+      );
+    }
+
+    // Web-версия Telegram
+    if (window.parent && window.parent !== window) {
+      const msg = JSON.stringify({
+        eventType: "web_app_setup_swipe_behavior",
+        eventData: { allow_vertical_swipe: false },
+      });
+      window.parent.postMessage(msg, "https://web.telegram.org");
+    }
+  } catch (e) {
+    console.warn("Не удалось настроить поведение свайпа", e);
+  }
 }
 
-// ---------- Свайп-назад ----------
+// ---------- Свайп-назад (слева направо) ----------
 function setupSwipeNavigation() {
   if (!appContainer) return;
 
@@ -667,17 +697,30 @@ function renderHookahDetailsScreen(cityId, hookahId) {
     )
     .join("");
 
-  // ВОЗВРАЩАЕМ СТАРОЕ РАБОЧЕЕ ПОВЕДЕНИЕ — ПРОСТЫЕ ССЫЛКИ <a href="tel:...">
-  const phonesHtml =
-    phones.length > 0
-      ? `
+  // --- телефоны: клик -> popup с номером и кнопкой "Скопировать" ---
+  let phonesHtml = "";
+  if (phones.length > 0) {
+    phonesHtml = `
       <ul class="hookah-phones">
         ${phones
-          .map((p) => `<li>${p}</li>`)
+          .map((p) => {
+            const clean = String(p).replace(/\s+/g, "");
+            return `
+              <li>
+                <button
+                  type="button"
+                  class="phone-btn"
+                  data-phone="${clean}"
+                >${p}</button>
+              </li>
+            `;
+          })
           .join("")}
       </ul>
-    `
-      : `<p class="hookah-phones-empty">Телефоны: нужно уточнить</p>`;
+    `;
+  } else {
+    phonesHtml = `<p class="hookah-phones-empty">Телефоны: нужно уточнить</p>`;
+  }
 
   let workingHoursHtml = "";
   if (workingHours) {
@@ -799,6 +842,49 @@ function renderHookahDetailsScreen(cityId, hookahId) {
       </div>
     </section>
   `;
+
+  // обработчик: показать popup с номером и кнопкой "Скопировать"
+  const phoneButtons = appContainer.querySelectorAll(".phone-btn");
+  phoneButtons.forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const raw = btn.dataset.phone;
+      if (!raw) return;
+
+      const display = btn.textContent.trim();
+      const tg = window.Telegram && window.Telegram.WebApp;
+
+      // если есть showPopup — используем нативный попап Телеги
+      if (tg && typeof tg.showPopup === "function") {
+        tg.showPopup(
+          {
+            title: "Позвонить в заведение",
+            message: display,
+            buttons: [
+              { id: "copy", type: "default", text: "Скопировать номер" },
+              { id: "close", type: "cancel", text: "Закрыть" },
+            ],
+          },
+          async (buttonId) => {
+            if (buttonId === "copy") {
+              try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  await navigator.clipboard.writeText(display);
+                  tg.showAlert("Номер скопирован");
+                } else {
+                  tg.showAlert(`Скопируй номер вручную: ${display}`);
+                }
+              } catch (e) {
+                tg.showAlert(`Скопируй номер вручную: ${display}`);
+              }
+            }
+          }
+        );
+      } else {
+        // fallback: просто alert
+        alert(`Телефон заведения: ${display}`);
+      }
+    });
+  });
 }
 
 // ---------- Кнопки внизу ----------
