@@ -11,28 +11,35 @@
   </head>
 
   <body>
+    <!-- Корневой контейнер приложения -->
     <div id="app"></div>
 
-    <!-- Нижняя панель навигации -->
-    <div class="app-footer">
-      <button id="backToWelcomeBtn" class="footer-btn hidden">На главную</button>
-      <button id="backToCitiesBtn" class="footer-btn hidden">К выбору городов</button>
-      <button id="backToHookahsBtn" class="footer-btn hidden">К выбору заведений</button>
+    <!-- Нижняя панель навигации (фиксированная) -->
+    <footer class="app-footer">
+      <button id="backToCitiesBtn" class="footer-btn hidden">
+        Назад к городам
+      </button>
+      <button id="backToHookahsBtn" class="footer-btn hidden">
+        Назад к заведениям
+      </button>
+      <button id="backToWelcomeBtn" class="footer-btn hidden">
+        На главную
+      </button>
       <a
         id="suggestionsBtn"
+        class="footer-btn footer-btn-secondary"
         href="https://t.me/toni_vaalolainen"
         target="_blank"
         rel="noopener noreferrer"
-        class="footer-btn footer-link"
       >
         Предложения
       </a>
-    </div>
+    </footer>
 
-    <!-- Данные -->
+    <!-- Реестр данных -->
     <script src="data.js"></script>
 
-    <!-- Города -->
+    <!-- Города (как и раньше, через registerCity) -->
     <script src="cities_and_hookahs/moscow.js"></script>
     <script src="cities_and_hookahs/spb.js"></script>
     <script src="cities_and_hookahs/nino.js"></script>
@@ -42,7 +49,7 @@
     <script src="cities_and_hookahs/uglich.js"></script>
     <script src="cities_and_hookahs/yaroslavl.js"></script>
 
-    <!-- Логика -->
+    <!-- Логика приложения -->
     <script src="app.js"></script>
   </body>
 </html>

@@ -1,3 +1,7 @@
+/* =========================
+   БАЗА
+   ========================= */
+
 *,
 *::before,
 *::after {
@@ -10,209 +14,216 @@ body {
   padding: 0;
   width: 100%;
   height: 100%;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #050608;
-  color: #f5f5f5;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #050509;
+  color: #ffffff;
+  -webkit-font-smoothing: antialiased;
 }
 
+/* ВАЖНО: тело не скроллится, весь скролл внутри экранов */
+body {
+  overflow: hidden;
+}
+
+/* Корневой контейнер мини-аппа */
 #app {
-  min-height: 100vh;
-  padding-top: 8px;
-  padding-bottom: calc(90px + env(safe-area-inset-bottom));
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  /* safe-area сверху и снизу */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 68px);
 }
 
-/* ЭКРАНЫ */
-
+/* Общий стиль экранов */
 .screen {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 16px 16px 32px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 16px 24px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Анимация переходов между экранами */
+.screen {
   opacity: 0;
+  transform: translateX(16px);
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+
+.screen.screen--animate-in-forward,
+.screen.screen--animate-in-back {
+  opacity: 1;
   transform: translateX(0);
 }
 
-/* Плавная анимация появления вперёд (новый экран) */
-.screen--animate-in-forward {
-  animation: slideInForward 0.22s ease-out forwards;
-}
-
-/* Плавная анимация появления назад (вернулись назад) */
-.screen--animate-in-back {
-  animation: slideInBack 0.22s ease-out forwards;
-}
-
-@keyframes slideInForward {
-  from {
-    opacity: 0;
-    transform: translateX(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInBack {
-  from {
-    opacity: 0;
-    transform: translateX(-24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
+/* Шапка экрана */
 .screen-title {
-  margin: 0 0 12px;
-  font-size: 20px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  margin: 8px 0 8px;
   text-align: center;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .screen-subtitle {
-  margin: 0 0 16px;
-  font-size: 14px;
-  color: #aaaaaa;
+  margin: 0 0 12px;
   text-align: center;
-}
-
-.empty-message {
-  margin-top: 24px;
   font-size: 14px;
-  color: #aaaaaa;
+  color: #a4a8ba;
 }
 
-/* WELCOME */
+/* =========================
+   WELCOME
+   ========================= */
 
 .welcome-screen {
-  display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
   text-align: center;
 }
 
 .welcome-image-wrapper {
   width: 100%;
-  max-width: 500px;
-  margin: 0 auto 16px;
+  max-width: 320px;
+  margin: 0 auto 12px;
 }
 
 .welcome-image {
-  width: 100%;
   display: block;
-  border-radius: 16px;
+  width: 100%;
+  border-radius: 24px;
   object-fit: cover;
 }
 
 .welcome-content {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
 }
 
 .welcome-title {
-  margin: 0;
+  margin: 8px 0 4px;
   font-size: 22px;
   font-weight: 700;
 }
 
 .welcome-subtitle {
-  margin: 0 0 12px;
+  margin: 0 0 16px;
   font-size: 14px;
-  color: #cccccc;
+  color: #a4a8ba;
 }
 
-/* БЛОК НЕШОП */
-
+/* Блок НЕШОП на главной */
 .neshop-block {
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  width: 100%;
+  margin-top: 20px;
 }
 
 .neshop-text {
-  margin: 0;
+  margin: 0 0 8px;
   font-size: 13px;
-  color: #cccccc;
+  color: #c9ccd8;
+}
+
+.primary-btn,
+.footer-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #ff7a2f;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s ease-out, box-shadow 0.1s ease-out,
+    background 0.15s ease-out, opacity 0.15s ease-out;
+  box-shadow: 0 6px 18px rgba(255, 122, 47, 0.5);
+}
+
+.primary-btn:active,
+.footer-btn:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  opacity: 0.9;
 }
 
 .neshop-btn {
   width: 100%;
-  max-width: 320px;
 }
 
-/* ПОИСК */
+/* =========================
+   ПОИСК
+   ========================= */
 
 .search-bar {
   margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .search-label {
-  display: block;
-  margin-bottom: 4px;
   font-size: 12px;
-  color: #888888;
+  color: #a4a8ba;
 }
 
 .search-input {
   width: 100%;
-  padding: 10px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: #111218;
-  color: #f5f5f5;
+  border: 1px solid #2d2f3c;
+  padding: 10px 14px;
   font-size: 14px;
+  background: #10121a;
+  color: #ffffff;
   outline: none;
 }
 
 .search-input::placeholder {
-  color: #666666;
+  color: #6f7487;
 }
 
-/* СПИСКИ КАРТОЧЕК */
+.search-input:focus {
+  border-color: #ff7a2f;
+  box-shadow: 0 0 0 1px rgba(255, 122, 47, 0.6);
+}
+
+/* =========================
+   КАРТОЧКИ
+   ========================= */
 
 .cards-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding-bottom: 16px;
+  gap: 10px;
 }
 
 .card {
   background: #111218;
-  border-radius: 16px;
-  padding: 12px;
+  border-radius: 18px;
+  padding: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
   border: 1px solid #23242f;
 }
 
-.card:active {
-  transform: scale(0.98);
-  opacity: 0.95;
-}
-
-/* КАРТОЧКИ ГОРОДОВ */
-
+/* Город */
 .city-card {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
 }
 
 .city-card-image-wrapper {
-  flex: 0 0 90px;
-  height: 70px;
+  flex: 0 0 80px;
+  height: 80px;
+  border-radius: 14px;
   overflow: hidden;
-  border-radius: 12px;
+  background: #1b1d27;
 }
 
 .city-card-image {
@@ -226,21 +237,19 @@ body {
 }
 
 .city-card-title {
-  margin: 0;
+  margin: 0 0 4px;
   font-size: 16px;
   font-weight: 600;
 }
 
-/* КАРТОЧКИ ЗАВЕДЕНИЙ В СПИСКЕ */
-
+/* Кальянная в списках */
 .hookah-card {
   cursor: pointer;
 }
 
 .hookah-card-main {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .hookah-card-info {
@@ -256,31 +265,26 @@ body {
 .hookah-card-rating {
   margin: 0 0 4px;
   font-size: 13px;
-  color: #f5f5f5;
+  color: #a4ffb8;
 }
 
 .hookah-card-rating span {
   font-weight: 600;
-  color: #ffd166;
 }
 
-.hookah-card-city {
-  margin: 0 0 4px;
-  font-size: 12px;
-  color: #bbbbbb;
-}
-
+.hookah-card-city,
 .hookah-card-address {
   margin: 0;
-  font-size: 12px;
-  color: #bbbbbb;
+  font-size: 13px;
+  color: #c9ccd8;
 }
 
 .hookah-card-image-wrapper {
   flex: 0 0 90px;
-  height: 70px;
-  border-radius: 12px;
+  height: 90px;
+  border-radius: 14px;
   overflow: hidden;
+  background: #1b1d27;
 }
 
 .hookah-card-image {
@@ -289,120 +293,119 @@ body {
   object-fit: cover;
 }
 
-/* ДЕТАЛИ ЗАВЕДЕНИЯ */
+/* Пустые состояния */
+.empty-message {
+  margin: 12px 0;
+  font-size: 14px;
+  text-align: center;
+  color: #a4a8ba;
+}
+
+/* =========================
+   ДЕТАЛЬНАЯ КАРТОЧКА
+   ========================= */
 
 .hookah-details-screen {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .hookah-header {
-  text-align: left;
+  text-align: center;
+  margin-bottom: 6px;
 }
 
 .hookah-name {
-  margin: 0 0 4px;
-  font-size: 20px;
+  margin: 4px 0 2px;
+  font-size: 18px;
   font-weight: 700;
 }
 
 .hookah-city {
   margin: 0;
   font-size: 13px;
-  color: #aaaaaa;
+  color: #a4a8ba;
 }
 
-/* ГАЛЕРЕЯ */
-
+/* Галерея */
 .gallery-container {
   display: flex;
-  overflow-x: auto;
   gap: 8px;
+  overflow-x: auto;
   padding-bottom: 4px;
-  scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 }
 
 .gallery-slide {
-  flex: 0 0 80%;
-  max-width: 80%;
-  scroll-snap-align: center;
-  border-radius: 16px;
+  flex: 0 0 70%;
+  max-width: 70%;
+  border-radius: 18px;
   overflow: hidden;
+  background: #1b1d27;
 }
 
 .gallery-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
-/* ОСНОВНАЯ ИНФА */
-
+/* Основная инфа */
 .hookah-main-info {
   background: #111218;
-  border-radius: 16px;
-  padding: 12px;
+  border-radius: 18px;
+  padding: 10px 12px;
   border: 1px solid #23242f;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  position: relative;
-  z-index: 1;
 }
 
 .hookah-rating {
-  margin: 0;
+  margin: 0 0 4px;
   font-size: 14px;
 }
 
 .hookah-rating span {
   font-weight: 600;
-  color: #ffd166;
 }
 
 .hookah-address {
-  margin: 0;
+  margin: 0 0 6px;
   font-size: 13px;
-  color: #cccccc;
+  color: #c9ccd8;
 }
 
-/* ТЕЛЕФОНЫ */
-
+/* Телефоны */
 .hookah-phones {
   list-style: none;
-  padding: 0;
   margin: 6px 0 0;
-}
-
-.hookah-phones li {
-  margin: 2px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .phone-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  color: #8fd3ff;
-  text-decoration: underline;
+  width: 100%;
+  border-radius: 999px;
+  border: 1px solid #2d2f3c;
+  background: #05060a;
+  color: #ffffff;
+  font-size: 14px;
+  padding: 8px 10px;
+  text-align: center;
   cursor: pointer;
 }
 
 .phone-btn:active {
-  opacity: 0.7;
+  transform: translateY(1px) scale(0.98);
+  background: #10121a;
 }
 
 .hookah-phones-empty {
   margin: 6px 0 0;
   font-size: 13px;
-  color: #aaaaaa;
+  color: #a4a8ba;
 }
 
-/* ТЕГИ (ЕДА/АЛКО/НАПИТКИ) */
-
+/* Теги (еда/алкоголь/напитки) */
 .hookah-tags {
   margin-top: 8px;
   display: flex;
@@ -411,53 +414,56 @@ body {
 }
 
 .hookah-tag {
-  font-size: 11px;
-  padding: 4px 8px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 4px 8px;
+  font-size: 11px;
+  background: #1b1d27;
+  border: 1px solid #2f3140;
+  color: #c9ccd8;
 }
 
-/* ЧАСЫ РАБОТЫ */
-
+/* Часы работы */
 .hookah-working-block {
+  margin-top: 8px;
   background: #111218;
-  border-radius: 16px;
-  padding: 12px;
+  border-radius: 18px;
+  padding: 10px 12px;
   border: 1px solid #23242f;
 }
 
 .hookah-working-block h3 {
-  margin: 0 0 8px;
-  font-size: 15px;
+  margin: 0 0 6px;
+  font-size: 14px;
 }
 
 .working-hours-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 8px;
-}
-
-.working-hours-table td {
-  padding: 3px 0;
   font-size: 12px;
+  margin-bottom: 6px;
 }
 
 .wh-day {
-  width: 45%;
-  color: #aaaaaa;
+  padding: 2px 4px;
+  color: #a4a8ba;
+  width: 40%;
 }
 
 .wh-hours {
-  width: 55%;
+  padding: 2px 4px;
   text-align: right;
+  color: #e5e7f0;
 }
 
-/* СТАТУС СЕГОДНЯ */
+.hookah-working-empty {
+  margin: 0;
+  font-size: 13px;
+  color: #a4a8ba;
+}
 
 .hookah-today-status {
-  margin-top: 6px;
-  padding: 8px 10px;
+  margin-top: 4px;
+  padding: 6px 8px;
   border-radius: 999px;
   font-size: 12px;
   text-align: center;
@@ -481,14 +487,16 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* КОММЕНТАРИИ / ВИДЕО */
-
+/* Комментарии и видео */
 .hookah-notes,
 .hookah-video {
   background: #111218;
-  border-radius: 16px;
-  padding: 12px;
+  border-radius: 18px;
+  padding: 10px 12px;
   border: 1px solid #23242f;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #e5e7f0;
 }
 
 .hookah-notes h3,
@@ -497,90 +505,65 @@ body {
   font-size: 14px;
 }
 
-/* КНОПКИ */
-
-.primary-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 16px;
-  border-radius: 999px;
-  border: none;
-  background: linear-gradient(135deg, #ff7a1a, #ffb347);
-  color: #111218;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.primary-btn:active {
-  transform: scale(0.97);
+/* Кнопки действий */
+.hookah-actions {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .yandex-btn {
-  width: 100%;
+  text-decoration: none;
 }
 
-/* НИЖНЯЯ ПАНЕЛЬ */
+/* =========================
+   НИЖНЯЯ ПАНЕЛЬ
+   ========================= */
 
 .app-footer {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 8px 10px;
-  padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+  background: rgba(5, 5, 12, 0.96);
+  backdrop-filter: blur(18px);
   display: flex;
   gap: 8px;
-  justify-content: space-between;
-  align-items: center;
-  background: linear-gradient(180deg, rgba(5, 6, 8, 0.5), #050608 60%);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  z-index: 100;
+  z-index: 1000;
 }
 
 .footer-btn {
   flex: 1;
-  padding: 8px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(18, 19, 25, 0.9);
-  color: #f5f5f5;
-  font-size: 12px;
-  font-weight: 500;
-  text-align: center;
-  cursor: pointer;
-  text-decoration: none;
+  min-width: 0;
   white-space: nowrap;
 }
 
-.footer-btn:active {
-  transform: scale(0.97);
+.footer-btn-secondary {
+  background: #1b1d27;
+  color: #ffffff;
+  box-shadow: none;
+  border: 1px solid #303244;
 }
 
-.footer-link {
-  background: linear-gradient(135deg, #ff7a1a, #ffb347);
-  color: #111218;
-  border-color: transparent;
+.footer-btn-secondary:active {
+  background: #23263a;
 }
 
-/* СКРЫТОЕ */
-
+/* Скрытый элемент */
 .hidden {
   display: none !important;
 }
 
-/* АДАПТИВ */
-
+/* Адаптив под широкие экраны */
 @media (min-width: 700px) {
-  .screen {
-    padding: 24px 24px 40px;
+  #app {
+    max-width: 480px;
+    margin: 0 auto;
   }
 
-  .gallery-slide {
-    flex-basis: 60%;
-    max-width: 60%;
+  .screen {
+    padding: 24px 24px 32px;
   }
 }

@@ -37,7 +37,7 @@ function getHookahById(cityId, hookahId) {
   return getHookahsByCityId(cityId).find((h) => h.id === hookahId) || null;
 }
 
-// ---------- Утилиты телефонов / часов ----------
+// ---------- Телефоны / часы ----------
 function normalizePhones(hookah) {
   if (!hookah) return [];
   if (Array.isArray(hookah.phones)) return hookah.phones;
@@ -188,7 +188,7 @@ function applyScreenTransition(direction) {
     "screen--animate-in-forward",
     "screen--animate-in-back"
   );
-  void screenEl.offsetWidth; // перезапуск анимации
+  void screenEl.offsetWidth;
 
   if (direction === "back") {
     screenEl.classList.add("screen--animate-in-back");
@@ -222,26 +222,35 @@ function navigateBack() {
   applyScreenTransition("back");
 }
 
-// ---------- Telegram WebApp: свайпы и fullscreen ----------
+// ---------- Telegram WebApp init ----------
 function initTelegramWebApp() {
   const tg = window.Telegram && window.Telegram.WebApp;
   if (!tg) return;
 
-  // Разворачиваем на максимум
-  if (typeof tg.expand === "function") {
-    tg.expand();
-  }
-
-  // Старый метод (может не работать, но пробуем)
-  if (typeof tg.disableVerticalSwipes === "function") {
-    tg.disableVerticalSwipes();
-  }
-
-  // Новый низкоуровневый event web_app_setup_swipe_behavior
   try {
+    // говорим Telegram, что апп готов
+    if (typeof tg.ready === "function") {
+      tg.ready();
+    }
+
+    // просим полноэкранный режим
+    if (typeof tg.requestFullscreen === "function") {
+      tg.requestFullscreen();
+    }
+
+    // разворачиваем на максимум (старый способ)
+    if (typeof tg.expand === "function") {
+      tg.expand();
+    }
+
+    // отключаем вертикальные свайпы (там, где это возможно)
+    if (typeof tg.disableVerticalSwipes === "function") {
+      tg.disableVerticalSwipes();
+    }
+
+    // новый низкоуровневый способ
     const payload = JSON.stringify({ allow_vertical_swipe: false });
 
-    // Мобильные клиенты
     if (
       window.TelegramWebviewProxy &&
       typeof window.TelegramWebviewProxy.postEvent === "function"
@@ -252,16 +261,15 @@ function initTelegramWebApp() {
       );
     }
 
-    // Web-версия Telegram
     if (window.parent && window.parent !== window) {
       const msg = JSON.stringify({
         eventType: "web_app_setup_swipe_behavior",
         eventData: { allow_vertical_swipe: false },
       });
-      window.parent.postMessage(msg, "https://web.telegram.org");
+      window.parent.postMessage(msg, "*");
     }
   } catch (e) {
-    console.warn("Не удалось настроить поведение свайпа", e);
+    console.warn("initTelegramWebApp error", e);
   }
 }
 
@@ -330,7 +338,7 @@ function setFooterState({
   }
 }
 
-// ---------- Экраны ----------
+// ---------- ЭКРАНЫ ----------
 
 // Welcome
 function renderWelcomeScreen() {
@@ -345,7 +353,7 @@ function renderWelcomeScreen() {
   });
 
   appContainer.innerHTML = `
-    <section class="screen welcome-screen">
+    <section class="screen welcome-screen screen--animate-in-forward">
       <div class="welcome-image-wrapper">
         <img src="assets/welcome_image.PNG" alt="Добро пожаловать" class="welcome-image" />
       </div>
@@ -376,7 +384,7 @@ function renderWelcomeScreen() {
   }
 }
 
-// Выбор города + глобальный поиск
+// Экран городов + глобальный поиск
 function renderCitiesScreen() {
   currentCityId = null;
   currentHookahId = null;
@@ -392,7 +400,7 @@ function renderCitiesScreen() {
 
   if (!cities.length) {
     appContainer.innerHTML = `
-      <section class="screen cities-screen">
+      <section class="screen cities-screen screen--animate-in-forward">
         <h2 class="screen-title">ВЫБОР ГОРОДА</h2>
         <p class="empty-message">Города пока не добавлены.</p>
       </section>
@@ -401,7 +409,7 @@ function renderCitiesScreen() {
   }
 
   appContainer.innerHTML = `
-    <section class="screen cities-screen">
+    <section class="screen cities-screen screen--animate-in-forward">
       <h2 class="screen-title">ВЫБОР ГОРОДА</h2>
       <div class="search-bar">
         <label class="search-label" for="citiesSearchInput">Поиск по городам и заведениям</label>
@@ -418,7 +426,6 @@ function renderCitiesScreen() {
 
   const listContainer = document.getElementById("citiesOrHookahsContainer");
   const searchInput = document.getElementById("citiesSearchInput");
-
   if (!listContainer || !searchInput) return;
 
   function renderCitiesList(list) {
@@ -539,7 +546,7 @@ function renderCitiesScreen() {
   renderCitiesList(cities);
 }
 
-// Выбор заведений в городе
+// Экран списка кальянных
 function renderHookahsScreen(cityId) {
   const city = getCityById(cityId);
 
@@ -562,7 +569,7 @@ function renderHookahsScreen(cityId) {
 
   if (!hookahs.length) {
     appContainer.innerHTML = `
-      <section class="screen hookahs-screen">
+      <section class="screen hookahs-screen screen--animate-in-forward">
         <h2 class="screen-title">ВЫБОР КАЛЬЯННОЙ</h2>
         <p class="screen-subtitle">${city.name}</p>
         <p class="empty-message">В этом городе пока нет заведений.</p>
@@ -572,7 +579,7 @@ function renderHookahsScreen(cityId) {
   }
 
   appContainer.innerHTML = `
-    <section class="screen hookahs-screen">
+    <section class="screen hookahs-screen screen--animate-in-forward">
       <h2 class="screen-title">ВЫБОР КАЛЬЯННОЙ</h2>
       <p class="screen-subtitle">${city.name}</p>
       <div class="search-bar">
@@ -590,7 +597,6 @@ function renderHookahsScreen(cityId) {
 
   const listContainer = document.getElementById("hookahsContainer");
   const searchInput = document.getElementById("hookahsSearchInput");
-
   if (!listContainer || !searchInput) return;
 
   function renderHookahsList(list) {
@@ -665,7 +671,7 @@ function renderHookahsScreen(cityId) {
   renderHookahsList(hookahs);
 }
 
-// Карточка заведения
+// Детальная карточка заведения
 function renderHookahDetailsScreen(cityId, hookahId) {
   const city = getCityById(cityId);
   const hookah = getHookahById(cityId, hookahId);
@@ -700,7 +706,6 @@ function renderHookahDetailsScreen(cityId, hookahId) {
     )
     .join("");
 
-  // телефоны: кнопка, по клику — уход на call.html (внешний webview) → tel:
   let phonesHtml = "";
   if (phones.length > 0) {
     phonesHtml = `
@@ -806,7 +811,7 @@ function renderHookahDetailsScreen(cityId, hookahId) {
       : "";
 
   appContainer.innerHTML = `
-    <section class="screen hookah-details-screen">
+    <section class="screen hookah-details-screen screen--animate-in-forward">
       <header class="hookah-header">
         <h2 class="hookah-name">${hookah.name}</h2>
         <p class="hookah-city">${city.name}</p>
@@ -846,7 +851,7 @@ function renderHookahDetailsScreen(cityId, hookahId) {
     </section>
   `;
 
-  // обработчик: уходим на внешний call.html, где уже вызывается tel:
+  // Нажатие на телефон → внешний call.html, где уже вызывается tel:
   const phoneButtons = appContainer.querySelectorAll(".phone-btn");
   phoneButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -855,9 +860,7 @@ function renderHookahDetailsScreen(cityId, hookahId) {
 
       const clean = String(raw).replace(/[^\d+]/g, "");
 
-      // Базовый URL твоего приложения
       const BASE_URL = "https://dym-to-dym-webapp.vercel.app";
-
       const url = `${BASE_URL}/call.html?phone=${encodeURIComponent(clean)}`;
 
       const tg = window.Telegram && window.Telegram.WebApp;
@@ -870,7 +873,7 @@ function renderHookahDetailsScreen(cityId, hookahId) {
   });
 }
 
-// ---------- Кнопки внизу ----------
+// ---------- Кнопки футера ----------
 if (backToCitiesBtn) {
   backToCitiesBtn.addEventListener("click", () => {
     navigateBack();
