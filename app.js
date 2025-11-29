@@ -184,7 +184,10 @@ function applyScreenTransition(direction) {
   const screenEl = appContainer.querySelector(".screen");
   if (!screenEl) return;
 
-  screenEl.classList.remove("screen--animate-in-forward", "screen--animate-in-back");
+  screenEl.classList.remove(
+    "screen--animate-in-forward",
+    "screen--animate-in-back"
+  );
   void screenEl.offsetWidth; // перезапуск анимации
 
   if (direction === "back") {
@@ -697,7 +700,7 @@ function renderHookahDetailsScreen(cityId, hookahId) {
     )
     .join("");
 
-  // телефоны: кнопка, по клику — попытка открыть dialer
+  // телефоны: кнопка, по клику — уход на call.html (внешний webview) → tel:
   let phonesHtml = "";
   if (phones.length > 0) {
     phonesHtml = `
@@ -843,55 +846,25 @@ function renderHookahDetailsScreen(cityId, hookahId) {
     </section>
   `;
 
-  // обработчик: попытка открыть dialer максимально нагло
+  // обработчик: уходим на внешний call.html, где уже вызывается tel:
   const phoneButtons = appContainer.querySelectorAll(".phone-btn");
   phoneButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const raw = btn.dataset.phone;
       if (!raw) return;
 
-      const display = btn.textContent.trim();
-      const telUrl = `tel:${raw}`;
+      const clean = String(raw).replace(/[^\d+]/g, "");
+
+      // Базовый URL твоего приложения
+      const BASE_URL = "https://dym-to-dym-webapp.vercel.app";
+
+      const url = `${BASE_URL}/call.html?phone=${encodeURIComponent(clean)}`;
+
       const tg = window.Telegram && window.Telegram.WebApp;
-      let opened = false;
-
-      // 1. Пробуем через openLink (официальный способ, но tel: могут зарезать)
-      try {
-        if (tg && typeof tg.openLink === "function") {
-          tg.openLink(telUrl);
-          opened = true;
-        }
-      } catch (e) {
-        console.warn("tg.openLink tel: не сработал", e);
-      }
-
-      // 2. Прямой переход через location.href
-      if (!opened) {
-        try {
-          window.location.href = telUrl;
-          opened = true;
-        } catch (e) {
-          console.warn("location.href tel: не сработал", e);
-        }
-      }
-
-      // 3. Попытка через window.open
-      if (!opened) {
-        try {
-          window.open(telUrl, "_self");
-          opened = true;
-        } catch (e) {
-          console.warn("window.open tel: не сработал", e);
-        }
-      }
-
-      // 4. Если всё заблокировали — хотя бы показать номер
-      if (!opened) {
-        if (tg && typeof tg.showAlert === "function") {
-          tg.showAlert(`Не удалось открыть звонилку.\nТелефон: ${display}`);
-        } else {
-          alert(`Телефон заведения: ${display}`);
-        }
+      if (tg && typeof tg.openLink === "function") {
+        tg.openLink(url);
+      } else {
+        window.open(url, "_blank");
       }
     });
   });
